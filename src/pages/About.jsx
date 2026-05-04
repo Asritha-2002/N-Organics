@@ -1,5 +1,5 @@
 import React from 'react'
-import AboutHero from '../components/about/aboutHero'
+import AboutHero from '../components/about/AboutHero'
 import BrandStory from '../components/home/BrandStory'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
