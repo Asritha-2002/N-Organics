@@ -1,7 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, Clock, Sparkles, Award } from "lucide-react";
-import smallLogo from "../../assets/smallLogo2.png"
 
 const stats = [
   {
@@ -28,43 +27,37 @@ const stats = [
 
 export default function ResultsSection() {
   return (
-    <section className="py-24 lg:py-32 bg-[#d2e16a] text-white relative overflow-hidden">
+    <section className="py-24 lg:py-32 bg-[#c0da62] relative overflow-hidden">
       
-      {/* Decorative Circles */}
-      <div className="absolute top-10 right-10 w-72 h-72 rounded-full border border-white/10" />
-      <div className="absolute bottom-10 left-10 w-48 h-48 rounded-full border border-white/10" />
-      <div className="absolute top-1/2 left-1/3 w-96 h-96 rounded-full border border-white/5" />
-
       <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
         
         {/* Heading */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-16 flex flex-col items-center">
+          
+          <div className="w-48 h-0.5 bg-[#143c2f] mb-8" />
+
           <motion.span
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-xs tracking-[0.3em] uppercase text-[#587645] mb-4 block"
+            className="text-xs tracking-[0.3em] uppercase text-[#143c2f]/60 mb-4 block"
           >
             Clinical Results
           </motion.span>
 
-         <motion.div
-  initial={{ opacity: 0, y: 20 }}
-  whileInView={{ opacity: 1, y: 0 }}
-  viewport={{ once: true }}
-  className="flex items-center justify-center gap-3"
->
-  <img src={smallLogo} alt="" className="w-10 h-10 mt-2" />
-
-  <h2 className=" text-3xl md:text-4xl lg:text-6xl font-light leading-tight">
-    Results That{" "}
-    <span className="italic font-medium">Speak</span>
-  </h2>
-</motion.div>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-white text-3xl md:text-4xl  font-medium leading-tight"
+          >
+            <span className="text-[#143c2f] font-bold">Results</span> <span className="text-[#143c2f] font-light">That{" "}</span>
+            <span className="italic font-semibold">Speak</span>
+          </motion.h2>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 items-start mt-20">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
 
@@ -75,20 +68,20 @@ export default function ResultsSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="text-center"
+                className="relative bg-white rounded-3xl p-8 pt-12 text-center flex flex-col items-center shadow-lg "
               >
-                {/* Icon */}
-                <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-[#FFFFFF] flex items-center justify-center">
-                  <Icon className="w-6 h-6 text-[#587645]" />
+                {/* Floating Icon */}
+                <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-md border border-gray-100">
+                  <Icon className="w-7 h-7 text-[#143c2f]" />
                 </div>
 
                 {/* Number */}
-                <p className="text-4xl lg:text-5xl font-semibold mb-3">
+                <p className="text-[#143c2f] text-3xl md:text-4xl font-semibold mb-5 mt-4">
                   {stat.number}
                 </p>
 
                 {/* Label */}
-                <p className="text-sm text-[#587645] leading-relaxed">
+                <p className="text-sm text-[#143c2f]/70 leading-relaxed max-w-[240px]">
                   {stat.label}
                 </p>
               </motion.div>

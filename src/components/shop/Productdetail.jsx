@@ -458,14 +458,14 @@ export default function Productdetail() {
 
     {/* Rating */}
     <div className="flex items-center gap-3 mb-4 text-xs md:text-sm">
-      <div className="flex gap-1">
+      <div className="flex gap-1 ">
         {[...Array(5)].map((_, i) => (
           <Heart
             key={i}
             className={`h-4 w-4 ${
               i < Math.floor(product.rating)
-                ? "text-[#c8fec0] fill-[#c8fec0]"
-                : "text-gray-300"
+                ? "text-[#c8fec0] fill-[#c8fec0] stroke-[#457358] "
+                : "text-transparent fill-transparent stroke-gray-400 "
             }`}
           />
         ))}
@@ -548,7 +548,7 @@ export default function Productdetail() {
       
 
       {/* Heart moved to end */}
-      <button className="p-3 rounded-full bg-white border shadow-sm hover:bg-[#457358] transition">
+      <button className="p-3  rounded-full bg-white border shadow-sm hover:bg-[#457358] transition">
         <Heart className="h-5 w-5 text-[#457358] hover:text-white" />
       </button>
     </div>

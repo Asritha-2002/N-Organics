@@ -43,7 +43,8 @@ export default function FounderProfile() {
 
             {/* name */}
             <h2 className="mt-5 text-3xl font-light tracking-tight text-[#143c2f] sm:text-4xl lg:text-5xl">
-              Ananya <span className="font-medium italic">Sharma</span>
+              Neelima {" "}
+ <span className="font-medium italic">Bommareddy</span>
             </h2>
 
             {/* role text */}
@@ -53,7 +54,7 @@ export default function FounderProfile() {
 
             {/* description */}
             <p className="mx-auto mt-6 max-w-2xl text-sm leading-7 text-[#6f6a61] sm:text-base">
-              Ananya Sharma leads N-Organics with a thoughtful blend of cosmetic
+              Neelima Bommareddy leads N-Organics with a thoughtful blend of cosmetic
               science, sustainable business values, and a deep commitment to
               clean beauty. Her vision is to create products that feel gentle,
               effective, transparent, and aligned with nature.
