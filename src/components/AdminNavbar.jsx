@@ -2,7 +2,7 @@ import { FaBars, FaSignOutAlt, FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
-
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 const AdminNavbar = ({ toggleSidebar }) => {
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -21,7 +21,7 @@ const AdminNavbar = ({ toggleSidebar }) => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "http://localhost:2101/api/admin/admin-details",
+        `${BASE_URL}/admin/admin-details`,
         {
           method: "GET",
           headers: {
