@@ -181,13 +181,13 @@ const ContactContent = () => {
                 </label>
               </div>
 
-              <button
-                type="submit"
-                className="inline-flex items-center gap-2 rounded-full bg-[#143c2f] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#1f5a44]"
-              >
-                Submit Message
-                <ArrowRight className="h-4 w-4" />
-              </button>
+             <button
+  type="submit"
+  className="inline-flex items-center gap-2 rounded-full bg-[#457358] px-6 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-[#1c402f] shadow-md hover:shadow-lg group cursor-pointer"
+>
+  Submit Message
+  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+</button>
             </form>
           </motion.div>
         </div>

@@ -1,10 +1,15 @@
 import React, { useState } from "react";
 import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { validateForm } from "../utils/validation"; // ✅ centralized validation
+import axios from "axios";
+import toast from "react-hot-toast";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -15,43 +20,66 @@ const SignIn = () => {
   const [loading, setLoading] = useState(false);
 
   // ✅ Handle Change (field-level validation)
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+ const handleChange = (e) => {
+  const { name, value } = e.target;
 
-    const updatedData = {
-      ...formData,
-      [name]: value,
-    };
+  const updatedData = {
+    ...formData,
+    [name]: value,
+  };
 
-    setFormData(updatedData);
+  setFormData(updatedData);
 
-    // validate only that field
-    const validationErrors = validateForm(updatedData);
+  const validationErrors = validateForm(updatedData);
 
+  // ❌ skip password validation
+  if (name !== "password") {
     setErrors((prev) => ({
       ...prev,
       [name]: validationErrors[name] || "",
     }));
-  };
+  }
+};
 
-  // ✅ Submit
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  // ✅ Submit with API integration
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    const validationErrors = validateForm(formData);
-    setErrors(validationErrors);
+  let validationErrors = validateForm(formData);
 
-    if (Object.keys(validationErrors).length > 0) return;
+  // ❌ remove password validation
+  delete validationErrors.password;
 
-    setLoading(true);
+  setErrors(validationErrors);
 
-    // ✅ simulate login (no backend)
-    console.log("Login Data:", formData);
+  if (Object.keys(validationErrors).length > 0) return;
 
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000); // simulate delay
-  };
+  setLoading(true);
+
+  try {
+    const res = await axios.post(`${BASE_URL}/user/login`, formData);
+
+    toast.success(res.data.message || "Login successful");
+
+    if (res.data.token) {
+      localStorage.setItem("token", res.data.token);
+    }
+
+    const isAdmin = res.data.user?.isAdmin;
+    localStorage.setItem("isAdmin", isAdmin ? "true" : "false");
+
+    if (isAdmin) {
+      navigate("/admin");
+    } else {
+      navigate("/");
+    }
+
+  } catch (err) {
+    toast.error(err.response?.data?.message || "Something went wrong");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center">
@@ -121,16 +149,14 @@ const SignIn = () => {
                 onChange={handleChange}
                 placeholder="Enter Your Password"
                 className={`w-full pl-10 pr-10 py-2.5 border rounded-lg text-sm outline-none ${
-                  errors.password
-                    ? "border-red-500"
-                    : "border-gray-300"
+                  "border-gray-300"
                 }`}
               />
 
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 cursor-pointer"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>

@@ -1,6 +1,7 @@
 import React,{useEffect} from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
+import { Toaster } from "react-hot-toast";
 import Home from './pages/Home';
 import About from './pages/About';
 import Contact from './pages/Contact';
@@ -12,6 +13,15 @@ import Signup from './pages/SignUp';
 import SignIn from './pages/SignIn';
 import ForgotPassword from './pages/ForgotPassword';
 import RecetPassword from './pages/RecetPassword';
+import VerifyEmail from './pages/VerifyEmail';
+import NewPassword from './pages/NewPassword';
+import SuccessPasswordRecet from './pages/SuccessPasswordRecet';
+import FailPasswordRecet from './pages/FailPasswordRecet';
+import AdminLayout from './layout/AdminLayout';
+import ProtectedRoute from './pages/ProtectedRoute';
+import Banners from './components/admin/Banners';
+import AnnouncementBar from './components/admin/AnnouncementBar';
+import UserManagementPage from './components/admin/UserManagementPage';
 
 function App() {
   const ScrollToTop = () => {
@@ -29,6 +39,7 @@ function App() {
 };
   return (
     <BrowserRouter>
+    <Toaster position="top-center" />
     <ScrollToTop/>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -42,9 +53,33 @@ function App() {
         <Route path="/sign-in" element={<SignIn/>} />
         <Route path="/forget-password" element={<ForgotPassword/>} />
         <Route path="/reset-password" element={<RecetPassword/>} />
+         <Route path="/verify-email" element={<VerifyEmail/>} />
+         <Route path="/forgot-password-reset" element={<NewPassword/>} />
+         <Route path="/recet-success" element={
+           <SuccessPasswordRecet/>
+          } />
+
+          <Route path="/recet-failed" element={
+           <FailPasswordRecet/>
+          } />
+
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminLayout/>
+              </ProtectedRoute>
+            }
+          >
+                  <Route path="banners" element={<Banners />} />
+                  <Route path="announcementbar" element={<AnnouncementBar />} />
+                  <Route path="users" element={<UserManagementPage />} />
 
 
-        <Route path="*" element={<Navigate to="/" />} />
+          </Route>
+
+
+        {/* <Route path="*" element={<Navigate to="/" />} /> */}
       </Routes>
     </BrowserRouter>
   );

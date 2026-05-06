@@ -64,7 +64,7 @@ export default function Navbar() {
           : "bg-transparent"
       }`}
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-5 lg:px-6">
+      <div className="mx-auto max-w-7xl">
         <div className="flex h-16 items-center justify-between sm:h-18 lg:h-20">
           {/* LOGO */}
           <div className="flex min-w-0 items-center">
@@ -79,81 +79,100 @@ export default function Navbar() {
           {/* DESKTOP MENU */}
           <div className="hidden items-center gap-6 lg:flex xl:gap-10">
             {links.map((link) => (
-             <NavLink key={link.name} to={link.href}>
-  {() => {
-    const isShopActive =
-      location.pathname.startsWith("/shop") ||
-      location.pathname.startsWith("/product");
+              <NavLink key={link.name} to={link.href}>
+                {() => {
+                  const isShopActive =
+                    location.pathname.startsWith("/shop") ||
+                    location.pathname.startsWith("/product");
 
-    const isActive =
-      location.pathname === link.href ||
-      (link.name === "Shop" && isShopActive);
+                  const isActive =
+                    location.pathname === link.href ||
+                    (link.name === "Shop" && isShopActive);
 
-    return (
-      <div
-        className={`group relative text-sm uppercase tracking-[0.22em] transition xl:text-sm font-bold xl:tracking-widest ${
-          isActive
-            ? scrolled
-              ? "text-[#c8fec0] hover:text-[#457358]"
-              : "text-[#457358] hover:text-[#457358]"
-            : scrolled
-            ? "text-[#cbd1c7] hover:text-[#c8fec0]"
-            : "text-gray-800 hover:text-[#457358]"
-        }`}
-      >
-        {link.name}
+                  return (
+                    <div
+                      className={`group relative text-sm uppercase tracking-[0.22em] transition xl:text-sm font-bold xl:tracking-widest ${
+                        isActive
+                          ? scrolled
+                            ? "text-[#d2e16a] hover:text-[#d2e16a]"
+                            : "text-[#457358] hover:text-[#457358]"
+                          : scrolled
+                            ? "text-[#cbd1c7] hover:text-[#d2e16a]"
+                            : "text-gray-800 hover:text-[#457358]"
+                      }`}
+                    >
+                      {link.name}
 
-        <span
-  className={`absolute left-0 -bottom-2 h-[2px] w-0 transition-all duration-300 group-hover:w-full ${
-    isActive
-      ? scrolled
-        ? "bg-[#c8fec0] group-hover:bg-[#457358]"
-        : "bg-[#457358] group-hover:bg-[#457358]"
-      : scrolled
-      ? "bg-[#cbd1c7] group-hover:bg-[#c8fec0]"
-      : "bg-gray-800 group-hover:bg-[#457358]"
-  }`}
-/>
-      </div>
-    );
-  }}
-</NavLink>
+                      <span
+                        className={`absolute left-0 -bottom-2 h-[2px] w-0 transition-all duration-300 group-hover:w-full ${
+                          isActive
+                            ? scrolled
+                              ? "bg-[#d2e16a] group-hover:bg-[#d2e16a]"
+                              : "bg-[#457358] group-hover:bg-[#457358]"
+                            : scrolled
+                              ? "bg-[#cbd1c7] group-hover:bg-[#d2e16a]"
+                              : "bg-gray-800 group-hover:bg-[#457358]"
+                        }`}
+                      />
+                    </div>
+                  );
+                }}
+              </NavLink>
             ))}
           </div>
 
           {/* DESKTOP ICONS */}
-         <div className="hidden items-center gap-4 lg:flex xl:gap-5">
-  <Search
-    className={`h-6 w-6 cursor-pointer transition ${
-      scrolled
-        ? "text-[#cbd1c7] hover:text-[#c8fec0]"
-        : "text-gray-800 hover:text-[#457358]"
-    }`}
-  />
+          <div className="hidden items-center gap-4 lg:flex xl:gap-5 mr-6">
+            <Search
+              className={`h-6 w-6 cursor-pointer transition ${
+                scrolled
+                  ? "text-[#cbd1c7] hover:text-[#c8fec0]"
+                  : "text-gray-800 hover:text-[#457358]"
+              }`}
+            />
 
-  <User
-    className={`h-6 w-6 cursor-pointer transition ${
-      scrolled
-        ? "text-[#cbd1c7] hover:text-[#c8fec0]"
-        : "text-gray-800 hover:text-[#457358]"
-    }`}
-  />
+            <User
+              className={`h-6 w-6 cursor-pointer transition ${
+                scrolled
+                  ? "text-[#cbd1c7] hover:text-[#c8fec0]"
+                  : "text-gray-800 hover:text-[#457358]"
+              }`}
+             onClick={() => {
+  const isAdmin = localStorage.getItem("isAdmin");
+  console.log(isAdmin);
 
-  <div className="relative cursor-pointer">
-    <ShoppingBag
-      className={`h-6 w-6 transition ${
-        scrolled
-          ? "text-[#cbd1c7] hover:text-[#c8fec0]"
-          : "text-gray-800 hover:text-[#457358]"
-      }`}
-    />
+  if (isAdmin === "true") {
+    navigate("/admin");
+  } else if (isAdmin === "false") {
+    navigate("/profile");
+  } else {
+    // This catches null or undefined values when the user is not signed in
+    navigate("/sign-in");
+  }
+}}
+            />
 
-    {/* Badge */}
-    <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#457358] text-[10px] text-white">
-      0
-    </span>
-  </div>
-</div>
+            <div className="relative cursor-pointer">
+              <ShoppingBag
+                className={`h-6 w-6 transition ${
+                  scrolled
+                    ? "text-[#cbd1c7] hover:text-[#c8fec0]"
+                    : "text-gray-800 hover:text-[#457358]"
+                }`}
+              />
+
+              {/* Badge */}
+              <span
+                className={`absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full text-[10px] transition ${
+                  scrolled
+                    ? "bg-[#d2e16a] text-gray-900" // Colors when scrolled
+                    : "bg-[#457358] text-white" // Colors when not scrolled (default)
+                }`}
+              >
+                0
+              </span>
+            </div>
+          </div>
 
           {/* MOBILE BUTTON */}
           <button

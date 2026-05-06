@@ -9,6 +9,8 @@ import ResultsSection from '../components/home/ResultsSection';
 import TestimonialsSection from '../components/home/TestimonialsSection';
 import Footer from '../components/Footer';
 import ProductCarousel from '../components/home/ProductCarousel';
+import MarqueeBar from "../components/home/MarqueeBar"
+import BannerOfferModal from "../components/home/BannerOfferModal";
 
 const Home = () => {
   const location = useLocation();
@@ -25,7 +27,9 @@ const Home = () => {
 
   return (
     <div>
+      <BannerOfferModal/>
       <HeroSection/>
+      <MarqueeBar/>
       <ProductCarousel/>
       <FeaturedProducts />
       <BrandStory/>

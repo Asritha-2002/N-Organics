@@ -464,7 +464,7 @@ export default function Productdetail() {
             key={i}
             className={`h-4 w-4 ${
               i < Math.floor(product.rating)
-                ? "text-[#c8fec0] fill-[#c8fec0] stroke-[#457358] "
+                ? "text-[#c8fec0] fill-[#c8fec0] stroke-[#19a274]/40 "
                 : "text-transparent fill-transparent stroke-gray-400 "
             }`}
           />

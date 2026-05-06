@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, Clock, Sparkles, Award } from "lucide-react";
+import smallLogo from "../../assets/smallLogo.png"
 
 const stats = [
   {
@@ -27,14 +28,15 @@ const stats = [
 
 export default function ResultsSection() {
   return (
-    <section className="py-24 lg:py-32 bg-[#c0da62] relative overflow-hidden">
+    <section className="py-20 bg-[#c5dbcf] relative overflow-hidden">
       
       <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
         
         {/* Heading */}
         <div className="text-center mb-16 flex flex-col items-center">
           
-          <div className="w-48 h-0.5 bg-[#143c2f] mb-8" />
+          {/* <div className="w-48 h-0.5 bg-[#143c2f] mb-8" /> */}
+          <img src={smallLogo} alt="" className="w-10 h-10 mb-5" />
 
           <motion.span
             initial={{ opacity: 0 }}

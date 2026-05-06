@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import VisionMission from '../components/about/VisionMission'
 import FounderProfile from '../components/about/FounderProfile'
+import LogoSection from '../components/about/LogoSection'
 
 const About = () => {
   return (
@@ -14,6 +15,7 @@ const About = () => {
       <BrandStory/>
       <FounderProfile/>
       <VisionMission/>
+      <LogoSection/>
       <Footer/>
     </div>
   )

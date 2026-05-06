@@ -85,7 +85,7 @@ export default function ProductCarousel() {
                             state: { category: item.name },
                           })
                         }
-                        className="flex w-full items-center justify-center gap-1.5 rounded-full bg-white px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-[#143c2f] transition hover:bg-[#457358] hover:text-white cursor-pointer"
+                        className="flex w-full items-center justify-center gap-1.5 rounded-full bg-white px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-[#143c2f] transition hover:bg-[#d2e16a] cursor-pointer"
                       >
                         View
                         <ArrowRight className="h-3.5 w-3.5" />

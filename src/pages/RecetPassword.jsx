@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Lock, Eye, EyeOff, KeyRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 // import bg from "../assets/hero-sections-contact/contactsectionbgc-1.png";
+
 import { validateForm } from "../utils/validation"; // ✅ use common validation
 
 const RecetPassword = () => {

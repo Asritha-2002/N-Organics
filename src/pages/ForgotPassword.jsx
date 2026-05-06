@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Mail, KeyRound } from "lucide-react";
-
-
 import { NavLink } from "react-router-dom";
 import { validateForm } from "../utils/validation"; // ✅ use centralized validation
+import toast from "react-hot-toast";
+import axios from "axios"
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const ForgotPassword = () => {
   const [formData, setFormData] = useState({ email: "" });
@@ -24,7 +25,7 @@ const ForgotPassword = () => {
   };
 
   // ✅ submit (NO BACKEND)
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const validationErrors = validateForm(formData);
@@ -35,13 +36,25 @@ const ForgotPassword = () => {
     setLoading(true);
 
     // ✅ simulate sending
-    console.log("Verification email sent to:", formData.email);
+     try {
+      const response = await axios.post(
+        `${BASE_URL}/user/forgot-password`,
+        formData
+      );
 
-    setTimeout(() => {
-      console.log("Sent ✅");
+      toast.success(response.data.message || "Verification code sent");
+      
+      setFormData({ email: "" }); // optional reset
+
+    } catch (err) {
+      if (err.response && err.response.data) {
+        toast.error(err.response.data.message);
+      } else {
+        toast.error("Something went wrong. Try again later.");
+      }
+    } finally {
       setLoading(false);
-      setFormData({ email: "" });
-    }, 1000);
+    }
   };
 
   return (
@@ -103,8 +116,8 @@ const ForgotPassword = () => {
             disabled={loading}
             className={`w-full font-bold py-2.5 rounded-lg text-white transition cursor-pointer ${
               loading
-                ? "bg-[#d46a6a] cursor-not-allowed"
-                : "bg-[#002b0a] hover:bg-[#457358]"
+                ? "bg-[#8fb5a2] cursor-not-allowed text-white"
+      : "bg-[#002b0a] hover:bg-[#457358] text-white"
             }`}
           >
             {loading ? "Sending..." : "Send Verification Email"}

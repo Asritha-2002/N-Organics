@@ -73,7 +73,7 @@ function ProductCard({ product, index }) {
                 state: { tag: product.tag },
               })
             }
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-2.5 mb-6 lg:mb-2 text-sm font-medium text-black transition hover:bg-[#457358] hover:text-white cursor-pointer"
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-2.5 mb-6 lg:mb-2 text-sm font-medium text-black transition hover:bg-[#d2e16a] cursor-pointer"
           >
             <Eye size={16} />
             View Products

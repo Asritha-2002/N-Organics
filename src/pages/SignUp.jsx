@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { User, Mail, Phone, Lock, Eye, EyeOff } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { validateForm } from "../utils/validation";
+import toast from "react-hot-toast"
+import axios from "axios"
+const BASE_URL=import.meta.env.VITE_BASE_URL;
 
 const Signup = () => {
   const initialState = {
@@ -16,29 +19,51 @@ const Signup = () => {
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({}); // ✅ NEW
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // ✅ SUBMIT
-  const handleSubmit = (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  
+  // ✅ Validate form
+  const validationErrors = validateForm(formData);
+  setErrors(validationErrors);
 
-    const validationErrors = validateForm(formData);
-    setErrors(validationErrors);
+  // ✅ Mark all fields as touched
+  const allTouched = Object.keys(formData).reduce((acc, key) => {
+    acc[key] = true;
+    return acc;
+  }, {});
+  setTouched(allTouched);
 
-    // mark all fields as touched
-    const allTouched = Object.keys(formData).reduce((acc, key) => {
-      acc[key] = true;
-      return acc;
-    }, {});
-    setTouched(allTouched);
+  if (Object.keys(validationErrors).length > 0) return;
 
-    if (Object.keys(validationErrors).length > 0) return;
+  setLoading(true); 
 
-    console.log("Form Data:", formData);
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/user/register`,
+      formData
+    );
+    
+
+    toast.success(response.data.message || "Registered successfully!");
+
+    // ✅ Reset form
     setFormData(initialState);
     setTouched({});
-  };
+    setErrors({});
 
-  // ✅ CHANGE HANDLER (FIELD LEVEL VALIDATION ONLY)
+  } catch (err) {
+    toast.error(
+      err.response?.data?.message || "Something went wrong"
+    );
+  } finally {
+    setLoading(false); 
+  }
+};
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -77,7 +102,7 @@ const Signup = () => {
           {/* Name */}
           <div className="flex flex-col gap-1">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="name" className="text-sm font-medium">
+              <label htmlFor="name" className="text-sm font-semibold">
                 Full Name
               </label>
               <div
@@ -106,7 +131,7 @@ const Signup = () => {
           {/* Email */}
           <div className="flex flex-col gap-1">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="email" className="text-sm font-medium">
+              <label htmlFor="email" className="text-sm font-semibold">
                 Email Address
               </label>
               <div
@@ -135,7 +160,7 @@ const Signup = () => {
           {/* Phone */}
           <div className="flex flex-col gap-1">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="phone" className="text-sm font-medium">
+              <label htmlFor="phone" className="text-sm font-semibold">
                 Phone Number
               </label>
               <div
@@ -164,7 +189,7 @@ const Signup = () => {
           {/* Password */}
           <div className="flex flex-col gap-1">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="password" className="text-sm font-medium">
+              <label htmlFor="password" className="text-sm font-semibold">
                 Password
               </label>
               <div
@@ -203,7 +228,7 @@ const Signup = () => {
           {/* Confirm Password */}
           <div className="flex flex-col gap-1">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="confirmPassword" className="text-sm font-medium">
+              <label htmlFor="confirmPassword" className="text-sm font-semibold">
                 Confirm Password
               </label>
 
@@ -234,11 +259,18 @@ const Signup = () => {
 
           {/* Button */}
           <button
-            type="submit"
-            className="w-full bg-[#002b0a] text-white font-bold py-2.5 rounded-lg mt-4 hover:bg-[#457358] transition-colors cursor-pointer"
-          >
-            Create Your Account
-          </button>
+  type="submit"
+  disabled={loading}
+  className={`w-full font-bold py-3 rounded-lg transition cursor-pointer ${
+    loading
+      ? "bg-[#8fb5a2] cursor-not-allowed text-white"
+      : "bg-[#002b0a] hover:bg-[#457358] text-white"
+  }`}
+>
+  {loading ? "Creating account..." : "Create Your Account"}
+</button>
+
+
         </form>
 
         <p className="text-lg mt-6 text-gray-600 font-semibold">
