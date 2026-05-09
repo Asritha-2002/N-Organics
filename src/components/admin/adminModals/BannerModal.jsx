@@ -13,8 +13,7 @@ const initialForm = {
   discount: '',
   discountType: 'percentage',
   appliesTo: 'all',
-  productIds: '',
-  categoryIds: '',
+  categoryIds: [],
   startDate: '',
   endDate: '',
   maxUses: '',
@@ -100,15 +99,67 @@ export default function BannerModal({ isOpen, onClose, onSave, bannerData }) {
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [dragOver, setDragOver] = useState(false);
+  const [categories, setCategories] = useState([]);
+const [loadingCategories, setLoadingCategories] = useState(false);
+
+
+useEffect(() => {
+  const fetchCategories = async () => {
+    try {
+      setLoadingCategories(true);
+
+      const response = await fetch(
+        `${BASE_URL}/admin/products/categories`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setCategories(data.data);
+      }
+    } catch (error) {
+      console.log("Category fetch error:", error);
+      toast.error("Failed to fetch categories");
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
+  if (isOpen) {
+    fetchCategories();
+  }
+}, [isOpen]);
+
+const handleCategoryChange = (category) => {
+  setForm((prev) => {
+    const alreadySelected = prev.categoryIds.includes(category);
+
+    return {
+      ...prev,
+      categoryIds: alreadySelected
+        ? prev.categoryIds.filter((item) => item !== category)
+        : [...prev.categoryIds, category],
+    };
+  });
+};
 
   useEffect(() => {
     if (bannerData) {
       setForm({
-        ...bannerData,
-        startDate: formatForDatetimeLocal(bannerData.startDate),
-        endDate: formatForDatetimeLocal(bannerData.endDate),
-        imagePreview: bannerData.image?.url || null,
-      });
+  ...bannerData,
+  categoryIds: Array.isArray(bannerData.categoryIds)
+    ? bannerData.categoryIds
+    : JSON.parse(bannerData.categoryIds || "[]"),
+
+  startDate: formatForDatetimeLocal(bannerData.startDate),
+  endDate: formatForDatetimeLocal(bannerData.endDate),
+  imagePreview: bannerData.image?.url || null,
+});
     } else {
       setForm(initialForm);
     }
@@ -140,10 +191,10 @@ export default function BannerModal({ isOpen, onClose, onSave, bannerData }) {
     if (!form.endDate) e.endDate = 'End date is required';
     if (form.startDate && form.endDate && form.endDate <= form.startDate)
       e.endDate = 'End date must be after start date';
-    if (form.appliesTo === 'products' && !form.productIds.trim())
-      e.productIds = 'Enter at least one product ID';
-    if (form.appliesTo === 'category' && !form.categoryIds.trim())
-      e.categoryIds = 'Enter at least one category ID';
+    if (
+  form.appliesTo === "category" &&
+  form.categoryIds.length === 0
+) e.categoryIds = 'Enter at least one category ID';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -151,7 +202,7 @@ export default function BannerModal({ isOpen, onClose, onSave, bannerData }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-
+    console.log("CATEGORY IDS:", form.categoryIds);
     try {
       const formData = new FormData();
 
@@ -161,7 +212,11 @@ export default function BannerModal({ isOpen, onClose, onSave, bannerData }) {
         if (key === 'image' && form[key] instanceof File) {
           formData.append('image', form[key]);
         } else if (form[key] !== null && form[key] !== undefined) {
-          formData.append(key, form[key]);
+          if (Array.isArray(form[key])) {
+  formData.append(key, JSON.stringify(form[key]));
+} else {
+  formData.append(key, form[key]);
+}
         }
       });
 
@@ -356,7 +411,7 @@ export default function BannerModal({ isOpen, onClose, onSave, bannerData }) {
             <div className="space-y-4">
               <FormField label="Applies To" required>
                 <div className="grid grid-cols-3 gap-2">
-                  {['all', 'products', 'category'].map((opt) => (
+                  {['all', 'category'].map((opt) => (
                     <button
                       type="button"
                       key={opt}
@@ -367,36 +422,51 @@ export default function BannerModal({ isOpen, onClose, onSave, bannerData }) {
                           : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-green-300'
                       }`}
                     >
-                      {opt === 'all' ? 'All Products' : opt === 'products' ? 'Specific Products' : 'By Category'}
+                      {opt === 'all' ? 'All Products' : 'By Category'}
                     </button>
                   ))}
                 </div>
               </FormField>
 
               <AnimatePresence>
-                {form.appliesTo === 'products' && (
-                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                    <FormField label="Product IDs" required hint="Comma-separated MongoDB ObjectIDs">
-                      <Textarea
-                        placeholder="64f1a2b3c4d5e6f7a8b9c0d1, 64f1a2b3c4d5e6f7a8b9c0d2"
-                        rows={2}
-                        value={form.productIds}
-                        onChange={(e) => set('productIds', e.target.value)}
-                      />
-                      {errors.productIds && <p className="text-xs text-red-500">{errors.productIds}</p>}
-                    </FormField>
-                  </motion.div>
-                )}
-
                 {form.appliesTo === 'category' && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
                     <FormField label="Category IDs" required hint="Comma-separated MongoDB ObjectIDs">
-                      <Textarea
-                        placeholder="64f1a2b3c4d5e6f7a8b9c0d1, 64f1a2b3c4d5e6f7a8b9c0d2"
-                        rows={2}
-                        value={form.categoryIds}
-                        onChange={(e) => set('categoryIds', e.target.value)}
-                      />
+                      <div className="grid grid-cols-2 gap-3">
+  {loadingCategories ? (
+    <p className="text-sm text-gray-400">
+      Loading categories...
+    </p>
+  ) : categories.length > 0 ? (
+    categories.map((category, index) => {
+      const selected = form.categoryIds.includes(category);
+
+      return (
+        <button
+          type="button"
+          key={index}
+          onClick={() => handleCategoryChange(category)}
+          className={`flex items-center justify-between px-4 py-3 rounded-xl border text-sm transition
+            ${
+              selected
+                ? "bg-[#00bc7d] text-white border-[#00bc7d]"
+                : "bg-gray-50 border-gray-200 text-gray-700 hover:border-green-300"
+            }`}
+        >
+          <span>{category}</span>
+
+          {selected && (
+            <Check className="w-4 h-4" />
+          )}
+        </button>
+      );
+    })
+  ) : (
+    <p className="text-sm text-gray-400">
+      No categories found
+    </p>
+  )}
+</div>
                       {errors.categoryIds && <p className="text-xs text-red-500">{errors.categoryIds}</p>}
                     </FormField>
                   </motion.div>

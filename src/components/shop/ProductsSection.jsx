@@ -11,99 +11,100 @@ import { useNavigate } from "react-router-dom"; // Added for navigation
 import sampleProduct from "../../assets/products/sampleProduct.png";
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // Dummy Data with tags
-const initialProducts = [
-  {
-    id: 1,
-    name: "Pure Aloe Soothing Gel",
-    category: "Skin Care",
-    price: 499,
-    tag: "Bestseller",
-    image: sampleProduct,
-  },
-  {
-    id: 2,
-    name: "Rosehip Regenerative Facial Oil",
-    category: "Skin Care",
-    price: 1299,
-    tag: "Limited",
-    image: sampleProduct,
-  },
-  {
-    id: 3,
-    name: "Vitamin C Brightening Serum",
-    category: "Skin Care",
-    price: 899,
-    tag: "New",
-    image: sampleProduct,
-  },
-  {
-    id: 4,
-    name: "Nourishing Argan Hair Mask",
-    category: "Hair Care",
-    price: 699,
-    tag: "Combo",
-    image: sampleProduct,
-  },
-  {
-    id: 5,
-    name: "Rosemary Hair Growth Oil",
-    category: "Hair Care",
-    price: 999,
-    tag: "Bestseller",
-    image: sampleProduct,
-  },
-  {
-    id: 6,
-    name: "Exfoliating Coffee Body Scrub",
-    category: "Body Care",
-    price: 599,
-    tag: "New",
-    image: sampleProduct,
-  },
-  {
-    id: 7,
-    name: "Lavender & Shea Body Butter",
-    category: "Body Care",
-    price: 749,
-    tag: "Combo",
-    image: sampleProduct,
-  },
-  {
-    id: 8,
-    name: "Botanical Plant-based Clay Mask",
-    category: "Organic Essentials",
-    price: 1199,
-    tag: "Limited",
-    image: sampleProduct,
-  },
-  {
-    id: 9,
-    name: "Luxury Rose Water Mist",
-    category: "Luxury Hair Rituals",
-    price: 399,
-    tag: "New",
-    image: sampleProduct,
-  },
-  {
-    id: 10,
-    name: "Eucalyptus Bath Salt Spa",
-    category: "Bath & Spa",
-    price: 449,
-    tag: "Bestseller",
-    image: sampleProduct,
-  },
-];
+// const initialProducts = [
+//   {
+//     id: 1,
+//     name: "Pure Aloe Soothing Gel",
+//     category: "Skin Care",
+//     price: 499,
+//     tag: "Bestseller",
+//     image: sampleProduct,
+//   },
+//   {
+//     id: 2,
+//     name: "Rosehip Regenerative Facial Oil",
+//     category: "Skin Care",
+//     price: 1299,
+//     tag: "Limited",
+//     image: sampleProduct,
+//   },
+//   {
+//     id: 3,
+//     name: "Vitamin C Brightening Serum",
+//     category: "Skin Care",
+//     price: 899,
+//     tag: "New",
+//     image: sampleProduct,
+//   },
+//   {
+//     id: 4,
+//     name: "Nourishing Argan Hair Mask",
+//     category: "Hair Care",
+//     price: 699,
+//     tag: "Combo",
+//     image: sampleProduct,
+//   },
+//   {
+//     id: 5,
+//     name: "Rosemary Hair Growth Oil",
+//     category: "Hair Care",
+//     price: 999,
+//     tag: "Bestseller",
+//     image: sampleProduct,
+//   },
+//   {
+//     id: 6,
+//     name: "Exfoliating Coffee Body Scrub",
+//     category: "Body Care",
+//     price: 599,
+//     tag: "New",
+//     image: sampleProduct,
+//   },
+//   {
+//     id: 7,
+//     name: "Lavender & Shea Body Butter",
+//     category: "Body Care",
+//     price: 749,
+//     tag: "Combo",
+//     image: sampleProduct,
+//   },
+//   {
+//     id: 8,
+//     name: "Botanical Plant-based Clay Mask",
+//     category: "Organic Essentials",
+//     price: 1199,
+//     tag: "Limited",
+//     image: sampleProduct,
+//   },
+//   {
+//     id: 9,
+//     name: "Luxury Rose Water Mist",
+//     category: "Luxury Hair Rituals",
+//     price: 399,
+//     tag: "New",
+//     image: sampleProduct,
+//   },
+//   {
+//     id: 10,
+//     name: "Eucalyptus Bath Salt Spa",
+//     category: "Bath & Spa",
+//     price: 449,
+//     tag: "Bestseller",
+//     image: sampleProduct,
+//   },
+// ];
 
-const categories = [
-  "Skin Care",
-  "Hair Care",
-  "Body Care",
-  "Organic Essentials",
-  "Luxury Hair Rituals",
-  "Bath & Spa",
-];
+// const categories = [
+//   "Skin Care",
+//   "Hair Care",
+//   "Body Care",
+//   "Organic Essentials",
+//   "Luxury Hair Rituals",
+//   "Bath & Spa",
+// ];
 
 export default function ProductsSection() {
   const navigate = useNavigate(); // Added navigation hook
@@ -112,15 +113,65 @@ export default function ProductsSection() {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [sortBy, setSortBy] = useState("default");
   const [showFilters, setShowFilters] = useState(true);
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
+const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+  fetchCategories();
+}, []);
+
+const fetchCategories = async () => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/admin/products/categories`
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || "Failed to fetch categories");
+    }
+
+    setCategories(result.data || []);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+useEffect(() => {
+  fetchProducts();
+}, []);
+
+const fetchProducts = async () => {
+  try {
+    setLoading(true);
+
+    const response = await fetch(
+      `${BASE_URL}/products/list`
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || "Failed to fetch products");
+    }
+
+    setProducts(result.data || []);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
+};
   // Handle category checkbox change
   const handleCategoryChange = (category) => {
-    if (selectedCategories.includes(category)) {
-      setSelectedCategories(selectedCategories.filter((c) => c !== category));
-    } else {
-      setSelectedCategories([...selectedCategories, category]);
-    }
-  };
+  if (selectedCategories.includes(category)) {
+    setSelectedCategories(selectedCategories.filter((c) => c !== category));
+  } else {
+    setSelectedCategories([...selectedCategories, category]);
+  }
+};
 
   // NEW: Handle navigation to product detail
   const handleViewDetails = (productId) => {
@@ -128,62 +179,80 @@ export default function ProductsSection() {
   };
 
   // Filter & Sort Logic
-  const filteredProducts = useMemo(() => {
-    let result = [...initialProducts];
+const filteredProducts = useMemo(() => {
+  let result = [...products];
 
-    // Search filter
-    if (searchQuery.trim() !== "") {
-      result = result.filter((product) =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
+  // Search filter
+  if (searchQuery.trim() !== "") {
+    result = result.filter((product) =>
+      product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }
 
-    // Category filter
-    if (selectedCategories.length > 0) {
-      result = result.filter((product) =>
-        selectedCategories.includes(product.category)
-      );
-    }
+  // Category filter (case-insensitive)
+  if (selectedCategories.length > 0) {
+    result = result.filter((product) =>
+      selectedCategories.some((selectedCat) =>
+        selectedCat.toLowerCase() === product.category?.toLowerCase()
+      )
+    );
+  }
 
-    // Sort/Filter options
-    if (sortBy === "low-to-high") {
-      result.sort((a, b) => a.price - b.price);
-    } else if (sortBy === "high-to-low") {
-      result.sort((a, b) => b.price - a.price);
-    } else if (sortBy === "new") {
-      result = result.filter((item) => item.tag === "New");
-    } else if (sortBy === "bestseller") {
-      result = result.filter((item) => item.tag === "Bestseller");
-    } else if (sortBy === "combo") {
-      result = result.filter((item) => item.tag === "Combo");
-    } else if (sortBy === "limited") {
-      result = result.filter((item) => item.tag === "Limited");
-    }
+  // Sort/Filter options
+  if (sortBy === "low-to-high") {
+    result.sort((a, b) => a.sellingPrice - b.sellingPrice);
+  } else if (sortBy === "high-to-low") {
+    result.sort((a, b) => b.sellingPrice - a.sellingPrice);
+  } else if (sortBy === "new") {
+    result = result.filter((item) => item.tag?.toLowerCase() === "new");
+  } else if (sortBy === "bestseller") {
+    result = result.filter((item) => item.tag?.toLowerCase() === "bestseller");
+  } else if (sortBy === "combo") {
+    result = result.filter((item) => item.tag?.toLowerCase() === "combo");
+  } else if (sortBy === "limited") {
+    result = result.filter((item) => item.tag?.toLowerCase() === "limited");
+  }
 
-    return result;
-  }, [searchQuery, selectedCategories, sortBy]);
+  return result;
+}, [products, searchQuery, selectedCategories, sortBy]);
 
   // Tag styling helper
-  const getTagColor = (tag) => {
-    switch (tag) {
-      case "Bestseller":
-        return "bg-emerald-600/90 text-white";
-      case "Limited":
-        return "bg-amber-600/90 text-white";
-      case "New":
-        return "bg-teal-600/90 text-white";
-      case "Combo":
-        return "bg-indigo-600/90 text-white";
-      default:
-        return "bg-white/80 text-[#1e352b]";
-    }
-  };
+ const getTagColor = (tag) => {
+  switch (tag?.toLowerCase()) {
+    case "limited":
+      return "bg-[#dd7714] text-white";
 
-  useEffect(() => {
-  if (location.state?.category) {
-    setSelectedCategories([location.state.category]);
+    case "bestseller":
+      return "bg-[#129b6f] text-white";
+
+    case "new":
+      return "bg-[#12988f] text-white";
+
+    case "combo":
+      return "bg-[#5945f1] text-white";
+
+    default:
+      return "bg-gray-500 text-white";
   }
-}, [location.state]);
+};
+
+// ✅ UNIQUE USEFFECT: Handle category from CAROUSEL (URL params only)
+useEffect(() => {
+  const params = new URLSearchParams(location.search);
+  const categoryParam = params.get("category");
+
+  if (categoryParam && categories.length > 0) {
+    const decodedCategory = decodeURIComponent(categoryParam);
+    
+    const matchedCategory = categories.find((cat) => 
+      cat.toLowerCase() === decodedCategory.toLowerCase()
+    );
+    
+    if (matchedCategory) {
+      setSelectedCategories([matchedCategory]);
+    }
+  }
+}, [location.search, categories]);
 useEffect(() => {
   // CATEGORY (already done before)
   if (location.state?.category) {
@@ -202,6 +271,25 @@ useEffect(() => {
     setSortBy(tagMap[location.state.tag] || "default");
   }
 }, [location.state]);
+
+useEffect(() => {
+  const params = new URLSearchParams(location.search);
+  const categoryParam = params.get("categories");
+
+  if (categoryParam) {
+    // Store categories in их ORIGINAL case (from backend)
+    const categoryList = categoryParam.split(",").map((cat) => cat.trim());
+    
+    // Filter categories that MATCH (case-insensitive)
+    const matchingCategories = categories.filter((cat) => 
+      categoryList.some((selected) => 
+        selected.toLowerCase() === cat.toLowerCase()
+      )
+    );
+    
+    setSelectedCategories(matchingCategories);
+  }
+}, [location.search, categories]);
 
   return (
     <section className="bg-[#f4efe9] py-12 sm:py-16 min-h-screen">
@@ -239,7 +327,7 @@ useEffect(() => {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="w-full appearance-none bg-white border border-gray-200 text-sm rounded-full py-3 pl-4 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#457358]/40 focus:border-[#457358] transition cursor-pointer"
               >
-                <option value="default">Featured</option>
+                <option value="default">All Products</option>
                 <option value="low-to-high">Price: Low to High</option>
                 <option value="high-to-low">Price: High to Low</option>
                 <option value="new">Newest</option>
@@ -308,7 +396,11 @@ useEffect(() => {
 
           {/* Product Grid */}
           <div className="flex-1 w-full">
-            {filteredProducts.length > 0 ? (
+            {loading ? (
+  <div className="text-center py-20 text-gray-400">
+    Loading products...
+  </div>
+) : filteredProducts.length > 0 ? (
               <motion.div
                 layout
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
@@ -319,45 +411,76 @@ useEffect(() => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    key={product.id}
+                    key={product._id}
                     className="flex flex-col group"
                   >
-                    <div className="relative aspect-[3/4] overflow-hidden rounded-[24px] bg-white shadow-[0_6px_20px_rgba(20,60,47,0.04)] border border-gray-100/50"
-                    onClick={() => handleViewDetails(product.id)}>
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
-                      />
+                   <div
+  className="relative aspect-[3/4] overflow-hidden rounded-[24px] bg-white shadow-[0_6px_20px_rgba(20,60,47,0.04)] border border-gray-100/50"
+  onClick={() => handleViewDetails(product._id)}
+>
+  <img
+    src={product.image || sampleProduct}
+    alt={product.name}
+    className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+  />
 
-                      {product.tag && (
-                        <span
-                          className={`absolute top-4 right-4 px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider rounded-full shadow-sm ${getTagColor(
-                            product.tag
-                          )}`}
-                        >
-                          {product.tag}
-                        </span>
-                      )}
+  {/* top badges */}
+  <div className="absolute top-4 left-4 right-4 flex items-start justify-between gap-2">
+    {/* Offer badge */}
+    {product.bestOffer && product.bestOffer.discount > 0 && (
+      <span
+        className={`px-3 py-1 text-[10px] uppercase font-bold tracking-wider rounded-full shadow-sm border ${
+          product.bestOffer.discountType === "percentage"
+            ? "bg-amber-50 text-amber-700 border-amber-200"
+            : "bg-emerald-50 text-emerald-700 border-emerald-200"
+        }`}
+      >
+        {product.bestOffer.discountType === "percentage"
+          ? `${product.bestOffer.discount}% Off`
+          : `Flat ₹${product.bestOffer.discount} Off`}
+      </span>
+    )}
 
-                      {/* MODIFIED: Added onClick to View Details button */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                        <button 
-                          onClick={() => handleViewDetails(product.id)}
-                          className="w-full bg-white text-[#143c2f] font-semibold text-xs uppercase tracking-widest py-3.5 rounded-full shadow-xl hover:bg-[#c8fec0] transition-all transform translate-y-3 group-hover:translate-y-0 duration-300 flex items-center justify-center gap-2 cursor-pointer"
-                        >
-                          <Eye className="h-4 w-4" /> View Details
-                        </button>
-                      </div>
-                    </div>
+    {/* Product tag */}
+    {product.tag && (
+      <span
+        className={`px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider rounded-full shadow-sm ${getTagColor(
+          product.tag
+        )}`}
+      >
+        {product.tag}
+      </span>
+    )}
+  </div>
+
+  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        handleViewDetails(product._id);
+      }}
+      className="w-full bg-white text-[#143c2f] font-semibold text-xs uppercase tracking-widest py-3.5 rounded-full shadow-xl hover:bg-[#c8fec0] transition-all transform translate-y-3 group-hover:translate-y-0 duration-300 flex items-center justify-center gap-2 cursor-pointer"
+    >
+      <Eye className="h-4 w-4" /> View Details
+    </button>
+  </div>
+</div>
 
                     <div className="mt-4 px-1.5 flex flex-col items-start">
                       <h4 className="text-sm font-bold tracking-wide text-[#143c2f] truncate max-w-full">
                         {product.name}
                       </h4>
-                      <p className="mt-1 font-semibold text-[#457358]">
-                        ₹{product.price}
-                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+  <p className="font-semibold text-[#457358]">
+    ₹{product.sellingPrice}
+  </p>
+
+  {product.mrp > product.sellingPrice && (
+    <p className="text-sm text-gray-400 line-through">
+      ₹{product.mrp}
+    </p>
+  )}
+</div>
                     </div>
                   </motion.div>
                 ))}

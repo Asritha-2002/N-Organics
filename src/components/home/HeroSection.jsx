@@ -6,6 +6,7 @@ import smallLogo from "../../assets/smallLogo.png";
 import heroimg from "../../assets/home/herosectionimg.png";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+import { useNavigate } from "react-router-dom";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -126,6 +127,25 @@ const StaticFallback = () => (
 );
 
 // ─── Main Component ───────────────────────────────────────────────────────────
+const buildShopUrl = (banner) => {
+  if (!banner) return "/shop";
+
+  if (banner.appliesTo === "all") {
+    return "/shop";
+  }
+
+  if (banner.appliesTo === "category") {
+    const categories = (banner.categoryIds || []).join(",");
+    return categories ? `/shop?categories=${encodeURIComponent(categories)}` : "/shop";
+  }
+
+  if (banner.appliesTo === "product" || banner.appliesTo === "products") {
+    const products = (banner.productIds || []).join(",");
+    return products ? `/shop?products=${encodeURIComponent(products)}` : "/shop";
+  }
+
+  return "/shop";
+}; 
 
 const HeroSection = () => {
   const [banners, setBanners] = useState([]);
@@ -133,6 +153,11 @@ const HeroSection = () => {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
   const intervalRef = useRef(null);
+  const navigate = useNavigate();
+  const handleBannerClick = () => {
+  const targetUrl = buildShopUrl(banner);
+  navigate(targetUrl);
+};
 
   useEffect(() => {
     const fetchBanners = async () => {
@@ -234,7 +259,7 @@ const HeroSection = () => {
             backgroundRepeat: "no-repeat",
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/70 to-transparent z-[1]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-white/70 via-white/40 to-transparent z-[1]" />
         <div className="absolute inset-0 bg-gradient-to-t from-white/40 via-transparent to-white/20 z-[1]" />
       </div>
 
@@ -330,10 +355,13 @@ const HeroSection = () => {
             )}
 
             <div className="flex flex-wrap gap-4">
-              <button className="flex items-center gap-2 px-8 py-3.5 bg-[#457358] text-[white] rounded-full shadow-xl hover:bg-[#1c402f] transition-all duration-300 group cursor-pointer text-sm tracking-wide">
-                {banner.buttonText || "Shop Now"}
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </button>
+              <button
+  onClick={handleBannerClick}
+  className="flex items-center gap-2 px-8 py-3.5 bg-[#457358] text-[white] rounded-full shadow-xl hover:bg-[#1c402f] transition-all duration-300 group cursor-pointer text-sm tracking-wide"
+>
+  {banner.buttonText || "Shop Now"}
+  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+</button>
             </div>
 
             <motion.div

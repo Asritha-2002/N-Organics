@@ -117,7 +117,7 @@ const [deleteId, setDeleteId] = useState(null);
       // 1. Search Filter
 
       const matchesSearch =
-        b.title.toLowerCase().includes(search.toLowerCase()) ||
+        b.title?.toLowerCase().includes(search.toLowerCase()) ||
         (b.description || "").toLowerCase().includes(search.toLowerCase());
 
       // 2. Status Filter

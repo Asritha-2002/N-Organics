@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import sampleProduct from "../../assets/products/sampleProduct.png";
-import { ChevronDown } from "lucide-react";
 import {
   Heart,
   ChevronLeft,
@@ -10,661 +8,794 @@ import {
   Minus,
   Plus,
   ShoppingCart,
-  Share2,
   ShieldCheck,
   Truck,
   Sparkles,
   ArrowLeft,
-  HelpCircle,
+  ChevronDown,
+  Leaf,
+  Droplets,
+  Package,
+  Star,
+  FlaskConical,
+  CheckCircle2,
+  Clock,
+  Globe,
+  Award,
+  Layers,
+  Play,
+  TicketPercent,
+  BadgePercent,
 } from "lucide-react";
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-// Expanded Dummy Data with detailed information and extra fields
-const initialProducts = [
-  {
-    id: 1,
-    name: "Pure Aloe Soothing Gel",
-    category: "Skin Care",
-    price: 499,
-    tag: "Bestseller",
-    image: sampleProduct,
-    images: [
-      sampleProduct,
-      sampleProduct,
-      sampleProduct
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const TAG_STYLES = {
+  bestseller: "bg-amber-500 text-white",
+  new: "bg-teal-500 text-white",
+  limited: "bg-rose-500 text-white",
+  combo: "bg-indigo-500 text-white",
+};
 
-    ],
-    rating: 4.5,
-    reviewsCount: 127,
-    description: "Pure Aloe Vera gel extracted directly from fresh, organic aloe leaves. This incredibly versatile gel soothes sunburns, reduces inflammation, and hydrates deeply without leaving any greasy residue. Formulated for all skin types, including highly sensitive skin.",
-    details: [
-      "100% natural and plant-based.",
-      "Free from parabens, sulfates, and artificial fragrances.",
-      "Cruelty-free and vegan."
-    ],
-    ingredients: ["Organic Aloe Vera", "Vitamin E", "Cucumber Extract", "Natural Preservative"],
-    howToUse: "Apply a generous amount to clean skin and massage gently until absorbed. Use morning and night for optimal hydration.",
-    benefits: "Deep hydration, soothes sunburns and irritation.",
-    daysToEffect: "Visible results within 3-5 days."
-  },
-  {
-    id: 2,
-    name: "Rosehip Regenerative Facial Oil",
-    category: "Skin Care",
-    price: 1299,
-    tag: "Limited",
-    image: sampleProduct,
-    images: [
-      sampleProduct,
-      sampleProduct,
-      sampleProduct
-
-    ],
-    rating: 4.8,
-    reviewsCount: 89,
-    description: "Limited edition Rosehip oil rich in vitamins A & C. Regenerates skin cells, fades scars & hyperpigmentation, deeply nourishes dry skin. Cold-pressed from organic rosehip seeds. Fast-absorbing with visible results in 2 weeks.",
-    details: [
-      "Rich in essential fatty acids and antioxidants.",
-      "Sustainably sourced from organic farms.",
-      "Non-comedogenic formula."
-    ],
-    ingredients: ["Cold-Pressed Rosehip Seed Oil", "Jojoba Oil", "Sea Buckthorn Oil"],
-    howToUse: "Warm 2-3 drops between your palms and gently press onto the face and neck after your serum step.",
-    benefits: "Fades scars, regenerates skin cells, nourishes dry skin.",
-    daysToEffect: "Visible results within 2 weeks."
-  },
-  {
-    id: 3,
-    name: "Vitamin C Brightening Serum",
-    category: "Skin Care",
-    price: 899,
-    tag: "New",
-    image: sampleProduct,
-    images: [
-      sampleProduct,
-      sampleProduct,
-      sampleProduct
-
-    ],
-    rating: 4.6,
-    reviewsCount: 204,
-    description: "Newly formulated 20% Vitamin C serum with stable ethyl ascorbic acid. Brightens dark spots, evens skin tone, boosts collagen production. Includes ferulic acid for enhanced stability. Lightweight texture, no sticky residue.",
-    details: [
-      "Concentrated formula with Ethyl Ascorbic Acid.",
-      "Dermatologically tested.",
-      "Glass dropper packaging for easy application."
-    ],
-    ingredients: ["20% Vitamin C", "Ferulic Acid", "Hyaluronic Acid", "Green Tea Extract"],
-    howToUse: "Apply 4-5 drops to face and neck once daily in the AM. Follow with sunscreen.",
-    benefits: "Brightens dark spots, evens skin tone, boosts collagen.",
-    daysToEffect: "Visible results in 2-3 weeks."
-  },
-  {
-    id: 4,
-    name: "Nourishing Argan Hair Mask",
-    category: "Hair Care",
-    price: 699,
-    tag: "Combo",
-    image: sampleProduct,
-    images: [
-      sampleProduct,
-      sampleProduct,
-      sampleProduct
-
-    ],
-    rating: 4.7,
-    reviewsCount: 56,
-    description: "Combo pack of nourishing Argan oil hair mask. Repairs damaged hair, restores shine, deeply conditions dry & frizzy hair. Moroccan argan oil + shea butter formula. Use weekly for salon-like results at home.",
-    details: [
-      "Deeply conditions and strengthens hair roots.",
-      "Safe for color-treated hair.",
-      "Provides UV protection."
-    ],
-    ingredients: ["Moroccan Argan Oil", "Shea Butter", "Keratin", "Pro-Vitamin B5"],
-    howToUse: "After shampooing, apply generously from roots to ends. Leave on for 5-10 minutes and rinse thoroughly.",
-    benefits: "Repairs damaged hair, restores shine, deeply conditions.",
-    daysToEffect: "After 2-3 applications."
-  },
-  {
-    id: 5,
-    name: "Rosemary Hair Growth Oil",
-    category: "Hair Care",
-    price: 999,
-    tag: "Bestseller",
-    image: sampleProduct,
-    images: [
-      sampleProduct,
-      sampleProduct,
-      sampleProduct
-
-    ],
-    rating: 4.9,
-    reviewsCount: 412,
-    description: "Our #1 bestseller! Rosemary oil proven to stimulate hair growth, reduce hair fall by 68%. Includes peppermint & castor oil for thicker, stronger hair. Clinical results in 90 days. Suitable for all hair types.",
-    details: [
-      "Clinically proven for hair fall reduction.",
-      "Improves scalp health and circulation.",
-      "100% natural, no synthetic fillers."
-    ],
-    ingredients: ["Pure Rosemary Oil", "Peppermint Oil", "Castor Oil", "Coconut Oil"],
-    howToUse: "Massage a small amount into the scalp. Leave for an hour or overnight before washing.",
-    benefits: "Stimulates hair growth, reduces hair fall, thickens hair.",
-    daysToEffect: "Clinical results in 90 days."
-  },
-  {
-    id: 6,
-    name: "Exfoliating Coffee Body Scrub",
-    category: "Body Care",
-    price: 599,
-    tag: "New",
-    image: sampleProduct,
-    images: [
-      sampleProduct,
-      sampleProduct,
-      sampleProduct
-
-    ],
-    rating: 4.4,
-    reviewsCount: 78,
-    description: "New launch! Coffee + coconut oil body scrub removes dead skin, improves circulation, and aids cellulite reduction. Natural exfoliation with 92% less microplastics than commercial scrubs. Glowy skin guaranteed.",
-    details: [
-      "Polishes and evens skin tone.",
-      "Invigorating coffee scent.",
-      "Eco-friendly packaging."
-    ],
-    ingredients: ["Arabica Coffee Grounds", "Cold Pressed Coconut Oil", "Cane Sugar", "Vitamin E"],
-    howToUse: "In the shower, apply to damp skin in circular motions. Rinse well.",
-    benefits: "Removes dead skin, improves circulation, aids cellulite reduction.",
-    daysToEffect: "After the first use."
-  },
-  {
-    id: 7,
-    name: "Lavender & Shea Body Butter",
-    category: "Body Care",
-    price: 749,
-    tag: "Combo",
-    image: sampleProduct,
-    images: [
-      sampleProduct,
-      sampleProduct,
-      sampleProduct
-
-    ],
-    rating: 4.6,
-    reviewsCount: 119,
-    description: "Combo deal! Ultra-rich shea butter + lavender essential oil. 24-hour deep moisturization for extremely dry skin. Melts on contact, non-greasy finish. Perfect for winter skincare routine.",
-    details: [
-      "Intense 24-hour moisture lock.",
-      "Calms the senses for better sleep.",
-      "Ideal for elbows, knees, and feet."
-    ],
-    ingredients: ["Raw Shea Butter", "Lavender Essential Oil", "Almond Oil", "Cocoa Butter"],
-    howToUse: "Apply generously to the body, concentrating on dry areas, and massage until absorbed.",
-    benefits: "Deep moisturization, calms the senses, softens rough areas.",
-    daysToEffect: "Immediate effect after 1st use."
-  },
-  {
-    id: 8,
-    name: "Botanical Plant-based Clay Mask",
-    category: "Organic Essentials",
-    price: 1199,
-    tag: "Limited",
-    image: sampleProduct,
-    images: [
-      sampleProduct,
-      sampleProduct,
-      sampleProduct
-
-    ],
-    rating: 4.7,
-    reviewsCount: 188,
-    description: "Limited edition French green clay + 7 botanical extracts. Detoxifies pores, controls oil, and minimizes acne. 98% natural ingredients, vegan & cruelty-free. Results visible after first use.",
-    details: [
-      "Draws out impurities and toxins.",
-      "Tightens pores naturally.",
-      "Maintains natural skin moisture barrier."
-    ],
-    ingredients: ["French Green Clay", "Tea Tree Extract", "Aloe Vera", "Witch Hazel"],
-    howToUse: "Apply an even layer on cleansed skin. Leave for 15 minutes and rinse off with warm water.",
-    benefits: "Detoxifies pores, controls oil, minimizes acne.",
-    daysToEffect: "Visible results after first use."
-  },
-  {
-    id: 9,
-    name: "Luxury Rose Water Mist",
-    category: "Luxury Hair Rituals",
-    price: 399,
-    tag: "New",
-    image: sampleProduct,
-    images: [
-      sampleProduct,
-      sampleProduct,
-      sampleProduct
-
-    ],
-    rating: 4.5,
-    reviewsCount: 94,
-    description: "Damask rose water from Bulgarian roses. Sets makeup, hydrates throughout day, soothes irritated skin. Pure hydrolat, no alcohol or preservatives. Travel-friendly 100ml size.",
-    details: [
-      "100% steam-distilled Damask rose petals.",
-      "Balances the skin’s pH.",
-      "Versatile use as a toner, primer, or refresher."
-    ],
-    ingredients: ["Damask Rose Hydrosol"],
-    howToUse: "Mist directly onto face and neck from a distance for instant hydration throughout the day.",
-    benefits: "Hydrates, sets makeup, balances skin pH.",
-    daysToEffect: "Immediate upon use."
-  },
-  {
-    id: 10,
-    name: "Eucalyptus Bath Salt Spa",
-    category: "Bath & Spa",
-    price: 449,
-    tag: "Bestseller",
-    image: sampleProduct,
-    images: [
-      sampleProduct,
-      sampleProduct,
-      sampleProduct
-
-    ],
-    rating: 4.8,
-    reviewsCount: 312,
-    description: "Our bestselling bath salt with eucalyptus & epsom salt. Relieves muscle tension, clears sinuses, promotes deep relaxation. Add 2 scoops to warm bath water. 30+ luxurious baths per jar.",
-    details: [
-      "Helps relieve muscle soreness and fatigue.",
-      "Eucalyptus provides natural aromatherapy.",
-      "Exfoliates and softens skin."
-    ],
-    ingredients: ["Epsom Salt", "Eucalyptus Essential Oil", "Dead Sea Salt"],
-    howToUse: "Add 2-3 scoops to warm running water. Soak in the bath for 20 minutes to relax.",
-    benefits: "Relieves muscle tension, clears sinuses, promotes deep relaxation.",
-    daysToEffect: "During or right after the first use."
-  }
-];
-
-export default function Productdetail() {
-  const { id } = useParams();
-  const [product, setProduct] = useState(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [openIndex, setOpenIndex] = useState(null);
-  const [quantity, setQuantity] = useState(1);
-
-  useEffect(() => {
-    const foundProduct = initialProducts.find((p) => p.id === parseInt(id));
-    setProduct(foundProduct);
-    setCurrentImageIndex(0);
-    setQuantity(1);
-  }, [id]);
-
-  if (!product) {
-    return (
-      <div className="min-h-screen bg-[#f4efe9] flex items-center justify-center">
-        <div className="text-sm text-gray-500 flex items-center gap-2">
-          <Sparkles className="animate-spin h-5 w-5 text-[#457358]" />
-          Loading product details...
-        </div>
-      </div>
-    );
-  }
-
-  const getTagColor = (tag) => {
-    switch (tag) {
-      case "Bestseller":
-        return "bg-emerald-600/90 text-white";
-      case "Limited":
-        return "bg-amber-600/90 text-white";
-      case "New":
-        return "bg-teal-600/90 text-white";
-      case "Combo":
-        return "bg-indigo-600/90 text-white";
-      default:
-        return "bg-white/80 text-[#1e352b]";
-    }
-  };
-
-  const prevImage = () => {
-    setCurrentImageIndex((prev) =>
-      prev === 0 ? product.images.length - 1 : prev - 1
-    );
-  };
-
-  const nextImage = () => {
-    setCurrentImageIndex((prev) =>
-      prev === product.images.length - 1 ? 0 : prev + 1
-    );
-  };
-
-  const faqs = [
-    {
-      q: "What is the product about?",
-      a: product.description,
-    },
-    {
-      q: "What are the key ingredients?",
-      a: product.ingredients.join(", "),
-    },
-    {
-      q: "What are the benefits?",
-      a: product.benefits,
-    },
-    {
-      q: "When will I see the effect?",
-      a: product.daysToEffect,
-    },
-    {
-      q: "How should I use it?",
-      a: product.howToUse,
-    },
-  ];
-
-  return (
-    <section className="py-8 text-sm min-h-screen flex flex-col justify-between relative overflow-hidden bg-[#faf8f5] pt-28 sm:pt-32 lg:pt-36">
-      <div className="max-w-8xl mx-auto px-6 w-full">
-        {/* Navigation Breadcrumb */}
-        <div className="mb-6 px-5 flex flex-col md:flex-row md:items-center md:justify-between text-[#143c2f] font-medium text-xs md:text-sm gap-2 md:gap-0">
-  <Link 
-    to="/shop" 
-    className="inline-flex items-center gap-2 hover:text-[#457358] transition self-start md:self-auto"
-  >
-    <ArrowLeft className="h-4 w-4" /> Back
-  </Link>
-  
-  <span className="text-gray-400 self-end md:self-auto text-right md:text-left">
-    Shop / {product.category} / <span className="text-[#457358]">{product.name}</span>
+const Pill = ({ children, className = "" }) => (
+  <span className={`px-3 py-1 rounded-full text-xs font-semibold border capitalize ${className}`}>
+    {children}
   </span>
-</div>
+);
 
-        {/* Main Content Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start p-6">
-          {/* Left: Images */}
-         <div className="space-y-5">
-  
-  {/* MAIN IMAGE */}
-  <div className="relative h-[400px] md:h-[450px] rounded-2xl overflow-hidden shadow-sm bg-[#faf8f5] border border-gray-100 flex items-center justify-center">
-    <img
-      src={product.images[currentImageIndex]}
-      alt={product.name}
-      className="h-full w-full object-contain"
-    />
+const Skeleton = ({ className }) => (
+  <div className={`animate-pulse bg-gray-200 rounded-xl ${className}`} />
+);
 
-    {product.images.length > 1 && (
-      <>
-        <button
-          onClick={prevImage}
-          className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow transition-all border border-gray-100"
-        >
-          <ChevronLeft className="h-5 w-5 text-gray-700" />
-        </button>
+const Accordion = ({ icon: Icon, title, children, defaultOpen = false, accent = "#457358" }) => {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="border border-[#e7dfd4] rounded-2xl bg-[#faf8f5] overflow-hidden transition hover:border-[#457358]/40">
+      <button onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5 text-left gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: `${accent}18` }}>
+            <Icon className="h-4 w-4" style={{ color: accent }} />
+          </div>
+          <span className="text-sm sm:text-base font-semibold text-[#143c2f]">{title}</span>
+        </div>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <span className="hidden sm:block text-[10px] tracking-[0.2em] uppercase" style={{ color: accent }}>
+            {open ? "Hide" : "Show"}
+          </span>
+          <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+            style={{ color: accent }} />
+        </div>
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.28 }} className="overflow-hidden">
+            <div className="px-5 sm:px-6 pb-5 ml-[52px] sm:ml-[64px]">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
-        <button
-          onClick={nextImage}
-          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow transition-all border border-gray-100"
-        >
-          <ChevronRight className="h-5 w-5 text-gray-700" />
-        </button>
-      </>
-    )}
-  </div>
-
-  {/* THUMBNAILS */}
-  {product.images.length > 1 && (
-    <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-      {product.images.map((img, index) => (
-        <motion.button
-          key={index}
-          onClick={() => setCurrentImageIndex(index)}
-          whileTap={{ scale: 0.95 }}
-          className={`flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-xl border overflow-hidden shadow-sm transition-all duration-300 ${
-            index === currentImageIndex
-              ? "border-[#457358] ring-2 ring-[#457358]/20"
-              : "border-gray-200 hover:border-gray-400"
-          }`}
-        >
-          <img
-            src={img}
-            alt={`${product.name} ${index + 1}`}
-            className="w-full h-full object-cover"
-          />
-        </motion.button>
+const StarRating = ({ average = 0, count = 0 }) => (
+  <div className="flex items-center gap-2 text-sm">
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map((s) => (
+        <Heart key={s} className={`h-4 w-4 ${s <= Math.round(average) ? "fill-amber-400 text-amber-400" : "text-gray-300 fill-gray-100"}`} />
       ))}
     </div>
-  )}
-</div>
-
-          {/* Right: Product details */}
-         <div className="space-y-6">
-  {/* TOP CONTENT */}
-  <div>
-    <div className="flex items-center gap-3 mb-3">
-      <span className="bg-[#457358]/10 text-[#457358] px-2.5 py-1 rounded-md text-xs tracking-wider uppercase">
-        {product.category}
-      </span>
-
-      {product.tag && (
-        <span
-          className={`px-2.5 py-1 text-xs uppercase tracking-wider rounded-md ${getTagColor(
-            product.tag
-          )}`}
-        >
-          {product.tag}
-        </span>
-      )}
-    </div>
-
-    <h1 className="text-2xl md:text-3xl font-semibold font-black text-[#143c2f] leading-tight mb-3">
-      {product.name}
-    </h1>
-
-    {/* Rating */}
-    <div className="flex items-center gap-3 mb-4 text-xs md:text-sm">
-      <div className="flex gap-1 ">
-        {[...Array(5)].map((_, i) => (
-          <Heart
-            key={i}
-            className={`h-4 w-4 ${
-              i < Math.floor(product.rating)
-                ? "text-[#c8fec0] fill-[#c8fec0] stroke-[#19a274]/40 "
-                : "text-transparent fill-transparent stroke-gray-400 "
-            }`}
-          />
-        ))}
-      </div>
-      <span className=" text-[#457358]">
-        {product.rating}
-      </span>
-      <span className="text-gray-500">
-        ({product.reviewsCount} reviews)
-      </span>
-    </div>
-
-    {/* Price */}
-    <div className="flex items-baseline gap-3 mb-6">
-      <span className="text-2xl md:text-3xl text-[#457358]">
-        ₹{product.price}
-      </span>
-      <span className="text-xs text-gray-400 uppercase tracking-wide">
-        (Inclusive of taxes)
-      </span>
-    </div>
+    <span className="font-semibold text-[#457358]">{average?.toFixed(1) || "0.0"}</span>
+    <span className="text-gray-400">({count} reviews)</span>
   </div>
+);
 
-  {/* ACTION SECTION */}
-  <div className="space-y-4 border-t border-gray-200/40 pt-6">
-    
-    {/* Quantity */}
-    <div className="flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-gray-200/30 shadow-sm">
-      <span className="text-sm  text-[#143c2f]">Quantity:</span>
-
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-          className="w-8 h-8 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200/50 flex items-center justify-center transition"
-        >
-          <Minus className="h-4 w-4 text-gray-600" />
-        </button>
-
-        <span className="w-8 text-center text-sm  text-[#143c2f]">
-          {quantity}
-        </span>
-
-        <button
-          onClick={() => setQuantity((prev) => prev + 1)}
-          className="w-8 h-8 rounded-lg bg-[#457358] hover:bg-[#143c2f] flex items-center justify-center transition text-white shadow"
-        >
-          <Plus className="h-4 w-4" />
-        </button>
-      </div>
-    </div>
-
-    {/* Buttons */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-  <button className="w-full bg-[#457358] hover:bg-[#143c2f] text-white py-3 px-6 rounded-xl shadow-sm transition flex items-center justify-center gap-2 text-sm cursor-pointer">
-    <ShoppingCart className="h-5 w-5" />
-    Add to Cart
-  </button>
-
-  <button className="w-full bg-[#c8fec0] text-black py-3 px-6 rounded-xl transition text-sm cursor-pointer">
-    Buy Now
-  </button>
-</div>
-    {/* Bottom Icons */}
-    <div className="flex items-center justify-between pt-2 text-xs text-[#143c2f]">
-      <div className="flex gap-3">
-        <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-white border shadow-sm">
-          <Truck className="h-5 w-5 text-[#457358]" />
-          Shipping
-        </div>
-
-        <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-white border shadow-sm">
-          <ShieldCheck className="h-5 w-5 text-[#457358]" />
-          Organic
-        </div>
-        {/* <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-white border shadow-sm">
-                  <Share2 className="h-5 w-5 text-[#457358]" />
-                  Share
-                </div> */}
-      </div>
-      
-
-      {/* Heart moved to end */}
-      <button className="p-3  rounded-full bg-white border shadow-sm hover:bg-[#457358] transition">
-        <Heart className="h-5 w-5 text-[#457358] hover:text-white" />
+const VideoModal = ({ video, onClose }) => (
+  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+    onClick={onClose}
+    className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.9, opacity: 0 }} onClick={(e) => e.stopPropagation()}
+      className="relative w-full max-w-3xl rounded-2xl overflow-hidden shadow-2xl bg-black">
+      <video src={video.url} controls autoPlay className="w-full max-h-[70vh] object-contain" />
+      <button onClick={onClose}
+        className="absolute top-3 right-3 p-2 rounded-full bg-black/60 text-white hover:bg-black transition">
+        ✕
       </button>
-    </div>
-  </div>
-</div>
+      {video.title && (
+        <div className="px-4 py-3 bg-black/80">
+          <p className="text-white text-sm font-medium">{video.title}</p>
         </div>
+      )}
+    </motion.div>
+  </motion.div>
+);
 
-        {/* Description & Information Section */}
-       <motion.div
-  initial={{ opacity: 0, y: 15 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.4, delay: 0.1 }}
-  className="mt-10 max:w-8xl mx-auto px-4 bg-white p-4 rounded"
->
-  {/* HEADING */}
-  <h2 className="text-2xl md:text-3xl font-bold text-[#284a39] mb-6">
-    More About Product
-  </h2>
+// ─── Main Component ───────────────────────────────────────────────────────────
+export default function ProductDetail() {
+  const { id } = useParams();
+  const [product,           setProduct]           = useState(null);
+  const [loading,           setLoading]           = useState(true);
+  const [error,             setError]             = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [quantity,          setQuantity]          = useState(1);
+  const [selectedVariant,   setSelectedVariant]   = useState(null);
+  const [wishlisted,        setWishlisted]        = useState(false);
+  const [activeVideo,       setActiveVideo]       = useState(null);
 
-  {/* DESCRIPTION */}
-  <p className="text-gray-600 leading-relaxed mb-10 text-sm md:text-base">
-    {product.fullDescription ||
-      "This product is crafted using high-quality natural ingredients that deeply nourish, hydrate, and protect your skin. Designed for daily use, it enhances your natural glow while maintaining skin balance and health."}
-  </p>
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    setError(null);
+    setCurrentImageIndex(0);
+    setQuantity(1);
 
-  {/* INFO / FAQ STYLE LIST */}
-  <div className="space-y-5">
-    {/* FAQS */}
-    {faqs?.map((faq, index) => {
-  const isOpen = openIndex === index;
+    fetch(`${BASE_URL}/products/${id}`)
+      .then((r) => r.json())
+      .then((json) => {
+        if (!json.success) throw new Error(json.message || "Product not found");
+        setProduct(json.data);
+        const def = json.data.variants?.find((v) => v.isDefault) || json.data.variants?.[0];
+        setSelectedVariant(def || null);
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  const handleVariantSelect = (variant) => {
+    setSelectedVariant(variant);
+    setCurrentImageIndex(0);
+  };
+
+  // ── Image logic ────────────────────────────────────────────────────────────
+  // Always show product-level images first.
+  // If selected variant has its OWN images, append them AFTER product images.
+  // Videos are shown only as thumbnails (open modal on click), never in main viewer.
+  const productImages = (product?.images || []).map((img) =>
+    typeof img === "string" ? img : img.url
+  );
+
+  const variantImages = (selectedVariant?.images || []).map((img) =>
+    typeof img === "string" ? img : img.url
+  );
+
+  // Main display pool: product images + selected variant's images (no duplicates)
+  const displayImages = [
+    ...productImages,
+    ...variantImages.filter((url) => !productImages.includes(url)),
+  ];
+
+  const videos    = product?.videos || [];
+  const currentPrice = selectedVariant?.price?.sellingPrice ?? null;
+  const currentMRP   = selectedVariant?.price?.mrp ?? null;
+  const discount     = currentMRP && currentPrice ? Math.round((1 - currentPrice / currentMRP) * 100) : 0;
+  const stockQty     = selectedVariant?.stock?.quantity ?? 0;
+  const sd           = product?.skincareDetails || {};
+  const availableOffers = (product?.offers || []).filter(
+  (offer) => offer?.isAvailable
+);
+  const bestOffer        = product?.bestOffer || {}
+
+  const getVariantLabel = (v) =>
+    [v.attributes?.size, v.attributes?.shade, v.attributes?.scent].filter(Boolean).join(" · ") || v.sku;
+
+  // ── Free From — normalise and check if truly non-empty ────────────────────
+  const freeFromList = sd.madeWithoutList
+    ? (Array.isArray(sd.madeWithoutList) ? sd.madeWithoutList : sd.madeWithoutList.split(","))
+        .map((m) => m.trim())
+        .filter(Boolean)
+    : [];
+
+  if (loading) {
+    return (
+      <section className="min-h-screen bg-[#faf8f5] pt-28 sm:pt-32 lg:pt-36 pb-16">
+        <div className="max-w-7xl mx-auto px-6">
+          <Skeleton className="h-5 w-48 mb-8" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <Skeleton className="h-[420px] rounded-2xl" />
+            <div className="space-y-4">
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-10 w-3/4" />
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-8 w-28" />
+              <Skeleton className="h-12 rounded-xl" />
+              <Skeleton className="h-12 rounded-xl" />
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <section className="min-h-screen bg-[#faf8f5] pt-36 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 rounded-full bg-rose-50 flex items-center justify-center mx-auto">
+            <Package className="h-7 w-7 text-rose-400" />
+          </div>
+          <p className="text-[#143c2f] font-semibold text-lg">Product not found</p>
+          <p className="text-gray-400 text-sm">{error}</p>
+          <Link to="/shop"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#457358] text-white rounded-xl text-sm font-medium hover:bg-[#143c2f] transition">
+            <ArrowLeft className="h-4 w-4" /> Back to Shop
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   return (
-   <div
-  key={index}
-  className="border border-[#e7dfd4] rounded-2xl bg-[#faf8f5] transition hover:border-[#457358]/40"
->
-  {/* HEADER */}
-  <button
-    onClick={() => setOpenIndex(isOpen ? null : index)}
-    className="w-full flex items-start sm:items-center justify-between px-4 sm:px-6 py-4 sm:py-5 text-left gap-4"
+    <section className="min-h-screen bg-[#faf8f5] pt-28 sm:pt-32 lg:pt-36 pb-20 text-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full">
+
+        {/* Breadcrumb */}
+        <div className="mb-6 px-1 flex flex-col md:flex-row md:items-center md:justify-between text-[#143c2f] font-medium text-xs md:text-sm gap-2">
+          <Link to="/shop" className="inline-flex items-center gap-2 hover:text-[#457358] transition">
+            <ArrowLeft className="h-4 w-4" /> Back to Shop
+          </Link>
+          <span className="text-gray-400 text-right">
+            Shop / {product.category}
+            {product.subCategory ? ` / ${product.subCategory}` : ""} /{" "}
+            <span className="text-[#457358]">{product.name}</span>
+          </span>
+        </div>
+
+        {/* ── Main Grid ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-start">
+
+          {/* ── LEFT: Images ── */}
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }} className="space-y-4 sticky top-28">
+
+            {/* Main image viewer */}
+            <div className="relative h-[380px] sm:h-[440px] rounded-3xl overflow-hidden shadow-md bg-white border border-gray-100 flex items-center justify-center group">
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={`${selectedVariant?.sku}-${currentImageIndex}`}
+                  src={displayImages[currentImageIndex]}
+                  alt={product.name}
+                  className="h-full w-full object-contain p-4"
+                  initial={{ opacity: 0, scale: 1.03 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  transition={{ duration: 0.25 }}
+                />
+              </AnimatePresence>
+
+              {/* Tag badge */}
+              {product.tag && (
+                <span className={`absolute top-4 left-4 px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wider ${TAG_STYLES[product.tag] || "bg-white text-[#1e352b]"}`}>
+                  {product.tag}
+                </span>
+              )}
+
+              {/* Variant image badge — only when showing a variant-specific image */}
+              {currentImageIndex >= productImages.length && variantImages.length > 0 && (
+                <span className="absolute top-4 right-4 px-2.5 py-1 text-[10px] font-bold rounded-full bg-[#457358]/10 text-[#457358] border border-[#457358]/20 uppercase tracking-wider">
+                  {getVariantLabel(selectedVariant)}
+                </span>
+              )}
+
+              {!product.isActive && (
+                <span className="absolute top-4 right-4 px-3 py-1 text-xs font-bold rounded-full bg-gray-200 text-gray-500 uppercase tracking-wider">
+                  Unavailable
+                </span>
+              )}
+
+              {displayImages.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setCurrentImageIndex((p) => p === 0 ? displayImages.length - 1 : p - 1)}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white p-2.5 rounded-full shadow-md border border-gray-100 transition opacity-0 group-hover:opacity-100">
+                    <ChevronLeft className="h-4 w-4 text-gray-700" />
+                  </button>
+                  <button
+                    onClick={() => setCurrentImageIndex((p) => p === displayImages.length - 1 ? 0 : p + 1)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white p-2.5 rounded-full shadow-md border border-gray-100 transition opacity-0 group-hover:opacity-100">
+                    <ChevronRight className="h-4 w-4 text-gray-700" />
+                  </button>
+                </>
+              )}
+
+              {displayImages.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
+                  {displayImages.map((_, i) => (
+                    <button key={i} onClick={() => setCurrentImageIndex(i)}
+                      className={`h-1.5 rounded-full transition-all ${i === currentImageIndex ? "w-5 bg-[#457358]" : "w-1.5 bg-gray-300"}`} />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* ── Thumbnail strip ──────────────────────────────────────────────
+                Order:
+                1. All product.images  (always shown, no matter which variant)
+                2. Selected variant's own images (if any, with a subtle label)
+                3. Product videos  (open modal on click)
+            ─────────────────────────────────────────────────────────────────── */}
+            <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+
+              {/* 1️⃣  Product images */}
+              {productImages.map((url, i) => (
+                <motion.button key={`prod-img-${i}`} whileTap={{ scale: 0.95 }}
+                  onClick={() => setCurrentImageIndex(i)}
+                  className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl border-2 overflow-hidden transition-all ${
+                    currentImageIndex === i
+                      ? "border-[#457358] shadow-md"
+                      : "border-gray-200 hover:border-[#457358]/50"
+                  }`}>
+                  <img src={url} alt={`Product ${i + 1}`} className="w-full h-full object-cover" />
+                </motion.button>
+              ))}
+
+              {/* 2️⃣  Selected variant's own images (only if they differ from product images) */}
+              {variantImages
+                .filter((url) => !productImages.includes(url))
+                .map((url, i) => {
+                  const globalIdx = productImages.length + i;
+                  return (
+                    <motion.button key={`var-img-${i}`} whileTap={{ scale: 0.95 }}
+                      onClick={() => setCurrentImageIndex(globalIdx)}
+                      title={`${getVariantLabel(selectedVariant)} image`}
+                      className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl border-2 overflow-hidden transition-all relative ${
+                        currentImageIndex === globalIdx
+                          ? "border-[#457358] shadow-md"
+                          : "border-[#457358]/30 hover:border-[#457358]"
+                      }`}>
+                      <img src={url} alt={`Variant ${i + 1}`} className="w-full h-full object-cover" />
+                      {/* Small variant indicator dot */}
+                      <span className="absolute bottom-1 right-1 w-2 h-2 rounded-full bg-[#457358] border border-white" />
+                    </motion.button>
+                  );
+                })}
+
+              {/* 3️⃣  Video thumbnails — click opens modal */}
+              {videos.map((vid, i) => (
+                <motion.button key={`vid-${i}`} whileTap={{ scale: 0.95 }}
+                  onClick={() => setActiveVideo(vid)}
+                  title={vid.title || "Product Video"}
+                  className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl border-2 border-[#457358]/30 overflow-hidden transition-all hover:border-[#457358] relative group bg-[#143c2f]">
+                  <video src={vid.url} className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity"
+                    muted preload="metadata" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow">
+                      <Play className="w-3 h-3 text-[#143c2f] fill-[#143c2f] ml-0.5" />
+                    </div>
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+
+            {/* ── Variant visual strip ── */}
+            {product.variants?.length > 1 && (
+              <div className="bg-white border border-[#e7dfd4] rounded-2xl p-4 space-y-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">All Variants</p>
+                <div className="flex flex-wrap gap-3">
+                  {product.variants.map((v) => {
+                    const isSelected = selectedVariant?.sku === v.sku;
+                    const hasVarImg  = v.images?.length > 0;
+                    // Use variant's own thumb if it has images, else first product image
+                    const thumb = hasVarImg
+                      ? (typeof v.images[0] === "string" ? v.images[0] : v.images[0].url)
+                      : productImages[0];
+                    return (
+                      <motion.button key={v.sku} whileTap={{ scale: 0.96 }}
+                        onClick={() => handleVariantSelect(v)}
+                        disabled={!v.isActive || v.stock?.quantity === 0}
+                        className={`relative flex flex-col items-center gap-1.5 p-2 rounded-2xl border-2 transition-all w-[72px] group
+                          ${isSelected ? "border-[#457358] bg-[#457358]/5 shadow-md" : "border-gray-200 hover:border-[#457358]/50 bg-white"}
+                          ${!v.isActive || v.stock?.quantity === 0 ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}>
+                        <div className={`w-12 h-12 rounded-xl overflow-hidden border ${isSelected ? "border-[#457358]/30" : "border-gray-100"}`}>
+                          <img src={thumb} alt={v.sku} className="w-full h-full object-cover" />
+                        </div>
+                        <p className={`text-[9px] font-semibold text-center leading-tight truncate w-full ${isSelected ? "text-[#457358]" : "text-gray-600"}`}>
+                          {[v.attributes?.size, v.attributes?.shade].filter(Boolean).join(" · ") || v.sku}
+                        </p>
+                        <p className={`text-[9px] font-bold ${isSelected ? "text-[#457358]" : "text-gray-500"}`}>
+                          ₹{v.price?.sellingPrice}
+                        </p>
+                        {v.stock?.quantity === 0 && (
+                          <span className="absolute top-1 right-1 text-[8px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded font-bold">OOS</span>
+                        )}
+                        {isSelected && (
+                          <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#457358] flex items-center justify-center shadow">
+                            <CheckCircle2 className="w-3 h-3 text-white fill-white" />
+                          </span>
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </motion.div>
+
+          {/* ── RIGHT: Details ── */}
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }} className="space-y-6">
+
+            {/* Category + Brand */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="bg-[#457358]/10 text-[#457358] px-2.5 py-1 rounded-md text-xs tracking-wider uppercase font-semibold">
+                {product.category}
+              </span>
+              {product.subCategory && (
+                <span className="bg-gray-100 text-gray-500 px-2.5 py-1 rounded-md text-xs tracking-wider uppercase">
+                  {product.subCategory}
+                </span>
+              )}
+              <span className="text-gray-300">·</span>
+              <span className="text-gray-500 text-xs">{product.brand}</span>
+            </div>
+
+            {/* Name + Rating */}
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#143c2f] leading-tight mb-3">{product.name}</h1>
+              <StarRating average={product.ratings?.average} count={product.ratings?.count} />
+            </div>
+
+            {/* Short description */}
+            {product.shortDescription && (
+              <p className="text-gray-600 leading-relaxed text-sm border-l-2 border-[#457358]/30 pl-4">
+                {product.shortDescription}
+              </p>
+            )}
+
+            {/* Highlights */}
+            {product.highlights?.filter(Boolean).length > 0 && (
+              <ul className="space-y-1.5">
+                {product.highlights.filter(Boolean).map((h, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-[#284a39]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#457358] mt-2 shrink-0" />
+                    {h}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* Selected variant info card */}
+            {selectedVariant && (
+              <motion.div key={selectedVariant.sku} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white border border-[#e7dfd4] rounded-2xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Selected Variant</p>
+                  <span className="text-[10px] font-bold text-[#457358] bg-[#457358]/10 px-2 py-0.5 rounded-full">
+                    {selectedVariant.sku}
+                  </span>
+                </div>
+                {Object.entries(selectedVariant.attributes || {})
+                  .filter(([, v]) => v && v !== "" && v !== 0)
+                  .map(([key, val]) => (
+                    <div key={key} className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400 capitalize">{key}</span>
+                      <span className="font-semibold text-[#143c2f] capitalize">{val}</span>
+                    </div>
+                  ))}
+                {selectedVariant.weight?.value > 0 && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-400">Net Weight</span>
+                    <span className="font-semibold text-[#143c2f]">
+                      {selectedVariant.weight.value} {selectedVariant.weight.unit}
+                    </span>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* Variant selector pills */}
+            {product.variants?.length > 1 && (
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Select Variant</p>
+                <div className="flex flex-wrap gap-2">
+                  {product.variants.map((v) => {
+                    const active = selectedVariant?.sku === v.sku;
+                    return (
+                      <button key={v.sku} onClick={() => handleVariantSelect(v)}
+                        disabled={!v.isActive || v.stock?.quantity === 0}
+                        className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
+                          active ? "bg-[#457358] text-white border-[#457358] shadow-sm"
+                                 : "bg-white text-[#143c2f] border-gray-200 hover:border-[#457358]/50"
+                        } ${!v.isActive || v.stock?.quantity === 0 ? "opacity-50 cursor-not-allowed" : ""}`}>
+                        {getVariantLabel(v)}
+                        {v.stock?.quantity === 0 && <span className="ml-1 text-[9px]">(OOS)</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Pricing */}
+            {currentPrice !== null && (
+              <motion.div key={`price-${selectedVariant?.sku}`} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+                className="flex items-baseline gap-3">
+                <span className="text-3xl font-bold text-[#457358]">₹{currentPrice}</span>
+                {currentMRP > currentPrice && (
+                  <>
+                    <span className="text-lg text-gray-400 line-through">₹{currentMRP}</span>
+                    <span className="text-sm font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">{discount}% OFF</span>
+                  </>
+                )}
+                <span className="text-xs text-gray-400 ml-auto">(Incl. of taxes)</span>
+              </motion.div>
+            )}
+           {bestOffer && bestOffer.discount > 0 && (
+  <div
+    className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border ${
+      bestOffer.discountType === "percentage"
+        ? "bg-amber-50 text-amber-700 border-amber-200"
+        : "bg-emerald-50 text-emerald-700 border-emerald-200"
+    }`}
   >
-    <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1">
-      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#457358]/10 flex items-center justify-center text-[#457358] flex-shrink-0">
-        <HelpCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+   <span>
+  {bestOffer.discountType === "percentage" ? (
+    <TicketPercent className="w-4 h-4" />
+  ) : (
+    <BadgePercent className="w-4 h-4" />
+  )}
+</span>
+    <span>
+      Best Offer:{" "}
+      {bestOffer.discountType === "percentage"
+        ? `${bestOffer.discount}% off`
+        : `Flat ₹${bestOffer.discount} off`}
+    </span>
+  </div>
+)}
+
+            {/* Stock indicator */}
+            {selectedVariant && (
+              <div className={`flex items-center gap-2 text-xs font-semibold ${stockQty > 10 ? "text-emerald-600" : stockQty > 0 ? "text-amber-500" : "text-rose-500"}`}>
+                <span className={`w-2 h-2 rounded-full ${stockQty > 10 ? "bg-emerald-500" : stockQty > 0 ? "bg-amber-400" : "bg-rose-400"}`} />
+                {stockQty > 10 ? `In Stock (${stockQty} units)` : stockQty > 0 ? `Only ${stockQty} left!` : "Out of Stock"}
+              </div>
+            )}
+
+            {/* Quantity + Actions */}
+            <div className="space-y-3 border-t border-gray-200/50 pt-5">
+              <div className="flex items-center justify-between px-4 py-3 bg-white rounded-2xl border border-gray-200/50 shadow-sm">
+                <span className="text-sm text-[#143c2f] font-medium">Quantity</span>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setQuantity((p) => Math.max(1, p - 1))}
+                    className="w-8 h-8 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-200/60 flex items-center justify-center transition">
+                    <Minus className="h-3.5 w-3.5 text-gray-600" />
+                  </button>
+                  <span className="w-8 text-center text-sm font-bold text-[#143c2f]">{quantity}</span>
+                  <button onClick={() => setQuantity((p) => Math.min(stockQty || 99, p + 1))}
+                    disabled={quantity >= stockQty}
+                    className="w-8 h-8 rounded-lg bg-[#457358] hover:bg-[#143c2f] disabled:opacity-40 flex items-center justify-center transition text-white">
+                    <Plus className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button disabled={stockQty === 0}
+                  className="w-full flex items-center justify-center gap-2 bg-[#457358] hover:bg-[#143c2f] disabled:opacity-50 text-white py-3.5 px-6 rounded-2xl shadow-sm transition text-sm font-semibold">
+                  <ShoppingCart className="h-4 w-4" /> Add to Cart
+                </button>
+                <button disabled={stockQty === 0}
+                  className="w-full py-3.5 px-6 rounded-2xl text-sm font-semibold bg-[#c8fec0] hover:bg-[#a8f0a0] disabled:opacity-50 text-[#143c2f] transition">
+                  Buy Now
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
+                <div className="flex gap-2">
+                  {[
+                    { icon: Truck,       label: "Free Delivery", show: product.isFreeShipping },
+                    { icon: ShieldCheck, label: "Certified",     show: true },
+                    { icon: Leaf,        label: "Natural",       show: true },
+                  ].filter((b) => b.show).map(({ icon: Icon, label }) => (
+                    <div key={label} className="flex flex-col items-center gap-1 p-2.5 rounded-xl bg-white border border-gray-100 shadow-sm text-[10px] text-[#143c2f]">
+                      <Icon className="h-4 w-4 text-[#457358]" />
+                      {label}
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => setWishlisted((p) => !p)}
+                  className={`p-3 rounded-full border shadow-sm transition ${wishlisted ? "bg-rose-50 border-rose-200" : "bg-white border-gray-200 hover:bg-[#457358]/5"}`}>
+                  <Heart className={`h-5 w-5 transition ${wishlisted ? "fill-rose-500 text-rose-500" : "text-[#457358]"}`} />
+                </button>
+              </div>
+            </div>
+
+            {/* Skincare meta pills */}
+            <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
+              {sd.skinType?.map((s) => (
+                <Pill key={s} className="bg-emerald-50 text-emerald-700 border-emerald-200">{s} skin</Pill>
+              ))}
+              {sd.claims?.slice(0, 4).map((c) => (
+                <Pill key={c} className="bg-sky-50 text-sky-700 border-sky-200">{c}</Pill>
+              ))}
+              {product.packaging?.isRecyclable && (
+                <Pill className="bg-green-50 text-green-700 border-green-200">♻ Recyclable</Pill>
+              )}
+            </div>
+          </motion.div>
+        </div>
+
+        {/* ── About Section ── */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="mt-14 bg-white rounded-3xl border border-[#e7dfd4] p-6 sm:p-8 shadow-sm space-y-5">
+
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#284a39]">About This Product</h2>
+
+          {product.description && (
+            <p className="text-gray-600 leading-relaxed text-sm sm:text-base">{product.description}</p>
+          )}
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+            {[
+              { icon: Clock,  label: "Shelf Life", value: sd.shelfLife?.months ? `${sd.shelfLife.months} months` : null },
+              { icon: Globe,  label: "Origin",     value: sd.countryOfOrigin },
+              { icon: Layers, label: "Variants",   value: product.variants?.length ? `${product.variants.length} options` : null },
+              { icon: Award,  label: "HSN Code",   value: product.hsn || null },
+            ].filter((s) => s.value).map(({ icon: Icon, label, value }) => (
+              <div key={label} className="bg-[#faf8f5] rounded-2xl p-4 border border-[#e7dfd4]">
+                <Icon className="h-4 w-4 text-[#457358] mb-2" />
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">{label}</p>
+                <p className="text-sm font-semibold text-[#143c2f]">{value}</p>
+              </div>
+            ))}
+          </div>
+<div className="space-y-3 pt-2">
+          {availableOffers?.length > 0 && (
+  <Accordion icon={Award} title="Available Offers">
+    <div className="space-y-3">
+      {availableOffers.map((offer) => (
+        <div
+          key={offer.bannerId}
+          className="bg-white rounded-xl p-3 border border-[#e7dfd4]"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-[#143c2f]">
+                {offer.title}
+              </p>
+              {offer.description && (
+                <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                  {offer.description}
+                </p>
+              )}
+            </div>
+
+            <span className="shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+              {offer.discountType === "percentage"
+                ? `${offer.discount}% OFF`
+                : `₹${offer.discount} OFF`}
+            </span>
+          </div>
+
+          <p className="text-[10px] text-gray-400 mt-2">
+            Valid till{" "}
+            {new Date(offer.endDate).toLocaleDateString("en-IN", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })}
+          </p>
+        </div>
+      ))}
+    </div>
+  </Accordion>
+)}
+</div>
+
+          <div className="space-y-3 pt-2">
+
+            {sd.usage?.howToUse && (
+              <Accordion icon={Sparkles} title="How To Use" defaultOpen>
+                <p className="text-sm text-[#7d756a] leading-relaxed">{sd.usage.howToUse}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+                  {sd.usage.frequency   && <div className="bg-white rounded-xl p-3 border border-[#e7dfd4]"><p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Frequency</p><p className="text-sm font-semibold text-[#143c2f]">{sd.usage.frequency}</p></div>}
+                  {sd.usage.whenToApply && <div className="bg-white rounded-xl p-3 border border-[#e7dfd4]"><p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">When</p><p className="text-sm font-semibold text-[#143c2f]">{sd.usage.whenToApply}</p></div>}
+                  {sd.usage.amountToUse && <div className="bg-white rounded-xl p-3 border border-[#e7dfd4]"><p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Amount</p><p className="text-sm font-semibold text-[#143c2f]">{sd.usage.amountToUse}</p></div>}
+                </div>
+              </Accordion>
+            )}
+
+            {sd.skinConcerns?.length > 0 && (
+              <Accordion icon={Droplets} title="Skin Concerns Addressed">
+                <div className="flex flex-wrap gap-2">
+                  {sd.skinConcerns.map((s) => (
+                    <span key={s} className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-200 capitalize">{s}</span>
+                  ))}
+                </div>
+              </Accordion>
+            )}
+
+            {product.ingredients?.length > 0 && (
+              <Accordion icon={FlaskConical} title="Ingredients (INCI)">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {product.ingredients.map((ing, i) => (
+                    <div key={i} className="flex items-start gap-3 bg-white rounded-xl p-3 border border-[#e7dfd4]">
+                      <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center flex-shrink-0">
+                        <FlaskConical className="h-3.5 w-3.5 text-rose-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-[#143c2f] flex items-center gap-1.5">
+                          {ing.name}
+                          {ing.isKeyActive && (
+                            <span className="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-bold">Key</span>
+                          )}
+                        </p>
+                        {ing.inci       && <p className="text-[10px] text-gray-400 mt-0.5 italic">{ing.inci}</p>}
+                        {ing.benefit    && <p className="text-xs text-[#457358] mt-0.5">{ing.benefit}</p>}
+                        {ing.percentage > 0 && <p className="text-[10px] text-gray-400">{ing.percentage}%</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Accordion>
+            )}
+
+            {sd.claims?.length > 0 && (
+              <Accordion icon={CheckCircle2} title="Claims & Certifications">
+                <div className="flex flex-wrap gap-2">
+                  {sd.claims.map((c) => (
+                    <span key={c} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200 capitalize">
+                      <CheckCircle2 className="h-3 w-3" />{c}
+                    </span>
+                  ))}
+                </div>
+                {sd.certifications?.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {(Array.isArray(sd.certifications) ? sd.certifications : sd.certifications.split(","))
+                      .map((c, i) => (
+                        <span key={i} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                          <Award className="h-3 w-3" />{c.trim()}
+                        </span>
+                      ))}
+                  </div>
+                )}
+              </Accordion>
+            )}
+
+            {/* ✅ Free From — only renders when list is truly non-empty */}
+            {freeFromList.length > 0 && (
+              <Accordion icon={Leaf} title="Free From">
+                <div className="flex flex-wrap gap-2">
+                  {freeFromList.map((m, i) => (
+                    <span key={i} className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-green-50 text-green-700 border border-green-200 capitalize">{m}</span>
+                  ))}
+                </div>
+              </Accordion>
+            )}
+
+            {product.packaging?.type && (
+              <Accordion icon={Package} title="Packaging & Shipping">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {[
+                    { label: "Type",            value: product.packaging.type },
+                    { label: "Material",        value: product.packaging.material },
+                    { label: "Shipping Weight", value: product.packaging.shippingWeight ? `${product.packaging.shippingWeight}g` : null },
+                    { label: "Dimensions",      value: product.packaging.dimensions?.length ? `${product.packaging.dimensions.length}×${product.packaging.dimensions.width}×${product.packaging.dimensions.height} cm` : null },
+                    { label: "Recyclable",      value: product.packaging.isRecyclable ? "Yes ♻" : null },
+                    { label: "GST",             value: product.taxRate ? `${product.taxRate}%` : null },
+                  ].filter((r) => r.value).map(({ label, value }) => (
+                    <div key={label} className="bg-white rounded-xl p-3 border border-[#e7dfd4]">
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">{label}</p>
+                      <p className="text-sm font-semibold text-[#143c2f] capitalize">{value}</p>
+                    </div>
+                  ))}
+                </div>
+              </Accordion>
+            )}
+          </div>
+        </motion.div>
       </div>
 
-      <h4 className="text-sm sm:text-base md:text-lg font-semibold text-[#143c2f] leading-snug">
-        {faq.q}
-      </h4>
-    </div>
-
-    {/* RIGHT SIDE */}
-    <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
-      <span className="text-[10px] sm:text-xs tracking-[0.15em] sm:tracking-[0.25em] uppercase text-[#457358]">
-        FAQ
-      </span>
-
-      <ChevronDown
-        className={`h-4 w-4 sm:h-5 sm:w-5 text-[#457358] transition-transform duration-300 ${
-          isOpen ? "rotate-180" : ""
-        }`}
-      />
-    </div>
-  </button>
-
-  {/* CONTENT (ANIMATED) */}
-  <AnimatePresence initial={false}>
-    {isOpen && (
-      <motion.div
-        initial={{ height: 0, opacity: 0 }}
-        animate={{ height: "auto", opacity: 1 }}
-        exit={{ height: 0, opacity: 0 }}
-        transition={{ duration: 0.3 }}
-        className="overflow-hidden px-4 sm:px-6 pb-4 sm:pb-5"
-      >
-        <p className="text-sm leading-relaxed max-w-2xl ml-[52px] sm:ml-16 text-[#7d756a]">
-          {faq.a}
-        </p>
-      </motion.div>
-    )}
-  </AnimatePresence>
-</div>
-  );
-})}
-
-    {/* OTHER DETAILS */}
-    {product?.details && (
-     <div className="flex flex-col md:flex-row items-start justify-between gap-4 md:gap-6 border border-[#e7dfd4] rounded-2xl px-5 md:px-6 py-5 bg-[#faf8f5] hover:border-[#457358]/40 transition">
-  {/* LEFT */}
-  <div className="flex items-start gap-4">
-    <div className="w-12 h-12 rounded-xl bg-[#457358]/10 flex items-center justify-center text-[#457358] flex-shrink-0">
-      *
-    </div>
-
-    <div>
-      <h4 className="text-lg font-semibold text-[#143c2f]">
-        Other Details
-      </h4>
-
-      <ul className="list-disc list-inside text-sm mt-2 space-y-1 text-[#7d756a]">
-        {product.details.map((detail, idx) => (
-          <li key={idx}>{detail}</li>
-        ))}
-      </ul>
-    </div>
-  </div>
-
-  {/* RIGHT TAG */}
-  <span className="text-xs tracking-[0.25em] uppercase text-[#457358] whitespace-nowrap self-end md:self-auto mt-2 md:mt-0">
-    Details
-  </span>
-</div>
-    )}
-  </div>
-</motion.div>
-      </div>
+      {/* Video Modal */}
+      <AnimatePresence>
+        {activeVideo && <VideoModal video={activeVideo} onClose={() => setActiveVideo(null)} />}
+      </AnimatePresence>
     </section>
   );
 }

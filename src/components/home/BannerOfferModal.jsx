@@ -99,7 +99,7 @@ const BannerOfferModal = () => {
   const isLive = now >= start && now <= end;
 
   return (
-    <div className="fixed top-0 left-0 z-[9999] w-[280px] sm:w-[320px]">
+    <div className="fixed bottom-4 right-0 z-[9999] w-[280px] sm:w-[320px]">
       <div className="relative overflow-hidden border border-[#457358]/15 bg-white/95 backdrop-blur-md shadow-2xl">
         <div className="absolute left-0 top-0 h-full w-1.5 bg-[#457358]" />
 

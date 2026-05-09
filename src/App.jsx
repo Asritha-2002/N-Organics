@@ -22,6 +22,8 @@ import ProtectedRoute from './pages/ProtectedRoute';
 import Banners from './components/admin/Banners';
 import AnnouncementBar from './components/admin/AnnouncementBar';
 import UserManagementPage from './components/admin/UserManagementPage';
+import Products from './components/admin/Products';
+import TagManager from './components/admin/TagManager';
 
 function App() {
   const ScrollToTop = () => {
@@ -74,6 +76,8 @@ function App() {
                   <Route path="banners" element={<Banners />} />
                   <Route path="announcementbar" element={<AnnouncementBar />} />
                   <Route path="users" element={<UserManagementPage />} />
+                  <Route path="products" element={<Products />} />
+                  <Route path="tagmanager" element={<TagManager />} />
 
 
           </Route>
