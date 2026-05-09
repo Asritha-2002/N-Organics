@@ -67,7 +67,7 @@ const AdminNavbar = ({ toggleSidebar }) => {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        "http://localhost:2101/api/admin/update-admin",
+        `${BASE_URL}/admin/update-admin`,
         {
           method: "PATCH",
           headers: {
