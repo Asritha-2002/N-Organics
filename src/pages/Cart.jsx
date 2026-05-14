@@ -553,7 +553,7 @@ const fetchDefaultAddress = useCallback(async () => {
   if (!token) return;
 
   try {
-    const res = await fetch(`http://localhost:2101/api/addresses/default`, {
+    const res = await fetch(`${BASE_URL}/addresses/default`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
