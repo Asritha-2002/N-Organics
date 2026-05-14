@@ -115,6 +115,7 @@ export default function ProductsSection() {
   const [showFilters, setShowFilters] = useState(true);
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
+
 const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -158,6 +159,8 @@ const fetchProducts = async () => {
     }
 
     setProducts(result.data || []);
+   
+
   } catch (error) {
     console.error(error);
   } finally {
@@ -182,35 +185,41 @@ const fetchProducts = async () => {
 const filteredProducts = useMemo(() => {
   let result = [...products];
 
-  // Search filter
+  // Search
   if (searchQuery.trim() !== "") {
-    result = result.filter((product) =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    result = result.filter((p) =>
+      p.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }
 
-  // Category filter (case-insensitive)
+  // Category — case-insensitive because API returns mixed case
   if (selectedCategories.length > 0) {
-    result = result.filter((product) =>
-      selectedCategories.some((selectedCat) =>
-        selectedCat.toLowerCase() === product.category?.toLowerCase()
+    result = result.filter((p) =>
+      selectedCategories.some(
+        (sel) => sel.toLowerCase() === p.category?.toLowerCase()
       )
     );
   }
 
-  // Sort/Filter options
+  // Sort / tag filter
   if (sortBy === "low-to-high") {
-    result.sort((a, b) => a.sellingPrice - b.sellingPrice);
+    result = [...result].sort((a, b) => (a.sellingPrice || 0) - (b.sellingPrice || 0));
   } else if (sortBy === "high-to-low") {
-    result.sort((a, b) => b.sellingPrice - a.sellingPrice);
+    result = [...result].sort((a, b) => (b.sellingPrice || 0) - (a.sellingPrice || 0));
   } else if (sortBy === "new") {
-    result = result.filter((item) => item.tag?.toLowerCase() === "new");
+    result = result.filter((p) =>
+      p.tag?.toLowerCase() === "new" || p.isNewest === true
+    );
   } else if (sortBy === "bestseller") {
-    result = result.filter((item) => item.tag?.toLowerCase() === "bestseller");
+    result = result.filter((p) =>
+      p.tag?.toLowerCase() === "bestseller" || p.isBestseller === true
+    );
   } else if (sortBy === "combo") {
-    result = result.filter((item) => item.tag?.toLowerCase() === "combo");
+    result = result.filter((p) => p.tag?.toLowerCase() === "combo");
   } else if (sortBy === "limited") {
-    result = result.filter((item) => item.tag?.toLowerCase() === "limited");
+    result = result.filter((p) =>
+      p.tag?.toLowerCase() === "limited" || p.isLimited === true
+    );
   }
 
   return result;
@@ -254,21 +263,19 @@ useEffect(() => {
   }
 }, [location.search, categories]);
 useEffect(() => {
-  // CATEGORY (already done before)
   if (location.state?.category) {
     setSelectedCategories([location.state.category]);
   }
-
-  // ✅ NEW: TAG → SORT DROPDOWN
   if (location.state?.tag) {
+    // map incoming tag label → sortBy key
     const tagMap = {
-      New: "new",
-      Bestseller: "bestseller",
-      Combo: "combo",
-      Limited: "limited",
+      New: "new", new: "new",
+      Bestseller: "bestseller", bestseller: "bestseller",
+      Combo: "combo", combo: "combo",
+      Limited: "limited", limited: "limited",
+      Featured: "default", // no sort option for featured, show all
     };
-
-    setSortBy(tagMap[location.state.tag] || "default");
+    setSortBy(tagMap[location.state.tag] ?? "default");
   }
 }, [location.state]);
 
@@ -331,6 +338,7 @@ useEffect(() => {
                 <option value="low-to-high">Price: Low to High</option>
                 <option value="high-to-low">Price: High to Low</option>
                 <option value="new">Newest</option>
+                
                 <option value="bestseller">Bestseller</option>
                 <option value="combo">Combo Products</option>
                 <option value="limited">Limited Edition</option>
@@ -411,7 +419,7 @@ useEffect(() => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    key={product._id}
+                    key={`${product._id}-${product.variantIndex}`}
                     className="flex flex-col group"
                   >
                    <div
@@ -425,35 +433,66 @@ useEffect(() => {
   />
 
   {/* top badges */}
-  <div className="absolute top-4 left-4 right-4 flex items-start justify-between gap-2">
-    {/* Offer badge */}
-    {product.bestOffer && product.bestOffer.discount > 0 && (
-      <span
-        className={`px-3 py-1 text-[10px] uppercase font-bold tracking-wider rounded-full shadow-sm border ${
-          product.bestOffer.discountType === "percentage"
-            ? "bg-amber-50 text-amber-700 border-amber-200"
-            : "bg-emerald-50 text-emerald-700 border-emerald-200"
-        }`}
-      >
-        {product.bestOffer.discountType === "percentage"
-          ? `${product.bestOffer.discount}% Off`
-          : `Flat ₹${product.bestOffer.discount} Off`}
-      </span>
-    )}
+  {/* top badges — replace the entire "top badges" div with this */}
+<div className="absolute top-4 left-4 right-4 flex items-start justify-between gap-2">
 
-    {/* Product tag */}
-    {product.tag && (
-      <span
-        className={`px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider rounded-full shadow-sm ${getTagColor(
-          product.tag
-        )}`}
-      >
-        {product.tag}
+  {/* Left: offer/discount badge */}
+  {product.bestOffer && product.bestOffer.discount > 0 && (
+    <span
+      className={`px-3 py-1 text-[10px] uppercase font-bold tracking-wider rounded-full shadow-sm border ${
+        product.bestOffer.discountType === "percentage"
+          ? "bg-amber-50 text-amber-700 border-amber-200"
+          : "bg-emerald-50 text-emerald-700 border-emerald-200"
+      }`}
+    >
+      {product.bestOffer.discountType === "percentage"
+        ? `${product.bestOffer.discount}% Off`
+        : `Flat ₹${product.bestOffer.discount} Off`}
+    </span>
+  )}
+
+  {/* Right: product label badge
+      Priority: isFeatured > isBestseller > isNewest > isLimited > tag string
+      If tag string matches an active boolean, we show it once (no duplicate).  */}
+  {(() => {
+    // Determine which label to show
+    let label = null;
+    let colorClass = "";
+
+    if (product.isFeatured) {
+      label = "Featured";
+      colorClass = "bg-[#e8a020] text-white";  // amber
+    } else if (product.isBestseller || product.tag?.toLowerCase() === "bestseller") {
+      label = "Bestseller";
+      colorClass = "bg-[#129b6f] text-white";
+    } else if (product.isNewest || product.tag?.toLowerCase() === "new") {
+      label = "New";
+      colorClass = "bg-[#12988f] text-white";
+    } else if (product.isLimited || product.tag?.toLowerCase() === "limited") {
+      label = "Limited";
+      colorClass = "bg-[#dd7714] text-white";
+    } else if (product.tag?.toLowerCase() === "combo") {
+      label = "Combo";
+      colorClass = "bg-[#5945f1] text-white";
+    } else if (product.tag) {
+      // any other tag string fallback
+      label = product.tag;
+      colorClass = "bg-gray-500 text-white";
+    }
+
+    if (!label) return null;
+
+    return (
+      <span className={`px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider rounded-full shadow-sm ml-auto ${colorClass}`}>
+        {label}
       </span>
-    )}
-  </div>
+    );
+  })()}
+</div>
 
   <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+
+  {product.quantity > 0 ? (
     <button
       onClick={(e) => {
         e.stopPropagation();
@@ -461,9 +500,16 @@ useEffect(() => {
       }}
       className="w-full bg-white text-[#143c2f] font-semibold text-xs uppercase tracking-widest py-3.5 rounded-full shadow-xl hover:bg-[#c8fec0] transition-all transform translate-y-3 group-hover:translate-y-0 duration-300 flex items-center justify-center gap-2 cursor-pointer"
     >
-      <Eye className="h-4 w-4" /> View Details
+      <Eye className="h-4 w-4" />
+      View Details
     </button>
-  </div>
+  ) : (
+    <div className="w-full bg-red-500 text-white font-semibold text-xs uppercase tracking-widest py-3.5 rounded-full shadow-xl flex items-center justify-center">
+      Out Of Stock
+    </div>
+  )}
+
+</div>
 </div>
 
                     <div className="mt-4 px-1.5 flex flex-col items-start">

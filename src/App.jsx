@@ -24,6 +24,14 @@ import AnnouncementBar from './components/admin/AnnouncementBar';
 import UserManagementPage from './components/admin/UserManagementPage';
 import Products from './components/admin/Products';
 import TagManager from './components/admin/TagManager';
+import UsersLayout from './layout/UsersLayout';
+import Profile from './components/user/Profile';
+import Wishlist from './components/user/Wishlist';
+import VoucherModal from './components/admin/adminModals/VoucherModal';
+import Voucher from './components/admin/Voucher';
+import Cart from './pages/Cart';
+import AddressManagement from './components/user/AddressManagement';
+import BuyNow from './pages/BuyNow';
 
 function App() {
   const ScrollToTop = () => {
@@ -40,8 +48,19 @@ function App() {
   return null;
 };
   return (
+    <>
+    <Toaster
+        position="top-center"
+        reverseOrder={false}
+        toastOptions={{
+          duration: 3000,
+          style: {
+            zIndex: 999999,
+          },
+        }}
+      />
     <BrowserRouter>
-    <Toaster position="top-center" />
+    
     <ScrollToTop/>
       <Routes>
         <Route path="/" element={<Home />} />
@@ -64,6 +83,9 @@ function App() {
           <Route path="/recet-failed" element={
            <FailPasswordRecet/>
           } />
+           <Route path="/cart" element={<Cart/>} />
+           <Route path="/checkout" element={<BuyNow/>} />
+
 
           <Route
             path="/admin"
@@ -78,6 +100,26 @@ function App() {
                   <Route path="users" element={<UserManagementPage />} />
                   <Route path="products" element={<Products />} />
                   <Route path="tagmanager" element={<TagManager />} />
+                  <Route path="vouchers" element={<Voucher/>} />
+
+
+
+          </Route>
+
+           <Route
+            path="/account"
+            element={
+              <ProtectedRoute>
+                <UsersLayout/>
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Profile />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="wishlist" element={<Wishlist />} />
+            <Route path="addresses" element={<AddressManagement />} />
+
+      
 
 
           </Route>
@@ -86,6 +128,7 @@ function App() {
         {/* <Route path="*" element={<Navigate to="/" />} /> */}
       </Routes>
     </BrowserRouter>
+    </>
   );
 }
 

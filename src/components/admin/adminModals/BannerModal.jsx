@@ -180,7 +180,7 @@ const handleCategoryChange = (category) => {
 
   const validate = () => {
     const e = {};
-    if (!form.title.trim()) e.title = 'Title is required';
+  if (!form.title.trim()) e.title = 'Title is required';
     if (form.priority === undefined || form.priority === null || form.priority === '' || isNaN(form.priority)) 
       e.priority = 'Priority is required';
     if (!form.discount || isNaN(form.discount) || Number(form.discount) <= 0)
@@ -201,6 +201,10 @@ const handleCategoryChange = (category) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.image && !form.imagePreview) {
+    toast.error("Please upload a banner image");
+    return;
+  }
     if (!validate()) return;
     console.log("CATEGORY IDS:", form.categoryIds);
     try {
@@ -259,7 +263,7 @@ const handleCategoryChange = (category) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 backdrop-blur-sm overflow-y-auto py-8 px-4"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 backdrop-blur-sm overflow-y-auto p-3 sm:p-5"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <motion.div
@@ -267,10 +271,10 @@ const handleCategoryChange = (category) => {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 20, scale: 0.97 }}
         transition={{ type: 'spring', damping: 25, stiffness: 320 }}
-        className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden"
+       className="w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[95vh] overflow-y-auto my-auto"
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-7 py-5 border-b border-gray-100 bg-gradient-to-r from-green-50 to-blue-50">
+        <div className="flex items-start sm:items-center justify-between gap-4 px-4 sm:px-7 py-4 sm:py-5 border-b border-gray-100 bg-gradient-to-r from-green-50 to-blue-50">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-[#00bc7d] shadow text-white">
               <Image className="w-4 h-4" />
@@ -292,12 +296,15 @@ const handleCategoryChange = (category) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-7 py-6 space-y-6">
+        <form
+  onSubmit={handleSubmit}
+  className="px-4 sm:px-6 lg:px-7 py-5 sm:py-6 space-y-6"
+>
           {/* Section: Display */}
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-[#00bc7d] mb-4">Display</p>
             <div className="space-y-4">
-              <FormField label="Banner Image">
+              <FormField label="Banner Image" required>
                 <div
                   onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                   onDragLeave={() => setDragOver(false)}
@@ -307,15 +314,22 @@ const handleCategoryChange = (category) => {
                   onClick={() => document.getElementById('banner-img-input').click()}
                 >
                   <input
+                  
                     id="banner-img-input"
                     type="file"
                     accept="image/*"
                     className="hidden"
                     onChange={(e) => handleImageFile(e.target.files[0])}
                   />
+                  
                   {form.imagePreview ? (
                     <div className="relative">
-                      <img src={form.imagePreview} alt="Preview" className="w-full h-36 object-cover" />
+                      <img
+  src={form.imagePreview}
+  alt="Preview"
+  className="w-full h-32 sm:h-36 object-cover"
+  
+/>
                       <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition">
                         <p className="text-white text-xs font-medium">Click to change</p>
                       </div>
@@ -332,6 +346,7 @@ const handleCategoryChange = (category) => {
 
               <FormField label="Title" required>
                 <Input
+                required
                   placeholder="e.g. Summer Sale — Up to 50% Off"
                   value={form.title}
                   onChange={(e) => set('title', e.target.value)}
@@ -339,8 +354,9 @@ const handleCategoryChange = (category) => {
                 {errors.title && <p className="text-xs text-red-500">{errors.title}</p>}
               </FormField>
 
-              <FormField label="Description">
+              <FormField label="Description" required>
                 <Textarea
+                required
                   placeholder="Short description shown below the banner title…"
                   rows={2}
                   value={form.description}
@@ -348,7 +364,7 @@ const handleCategoryChange = (category) => {
                 />
               </FormField>
 
-              <FormField label="Button Text">
+              <FormField label="Button Text" >
                 <Input
                   placeholder="Shop Now"
                   value={form.buttonText}
@@ -358,6 +374,7 @@ const handleCategoryChange = (category) => {
 
               <FormField label="Priority" required hint="Enter display priority index (e.g. 0, 1, 2)">
                 <Input
+                required
                   type="number"
                   placeholder="e.g. 0"
                   value={form.priority}
@@ -374,9 +391,9 @@ const handleCategoryChange = (category) => {
           {/* Section: Discount */}
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-[#00bc7d] mb-4">Discount</p>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField label="Discount Type" required>
-                <Select value={form.discountType} onChange={(e) => set('discountType', e.target.value)}>
+                <Select required value={form.discountType} onChange={(e) => set('discountType', e.target.value)}>
                   <option value="percentage">Percentage (%)</option>
                   <option value="flat">Flat Amount (₹)</option>
                 </Select>
@@ -396,6 +413,7 @@ const handleCategoryChange = (category) => {
                     onChange={(e) => set('discount', e.target.value)}
                     className="pl-9"
                     onWheel={(e) => e.target.blur()} 
+                    required
                   />
                 </div>
                 {errors.discount && <p className="text-xs text-red-500">{errors.discount}</p>}
@@ -410,7 +428,7 @@ const handleCategoryChange = (category) => {
             <p className="text-xs font-bold uppercase tracking-widest text-[#00bc7d] mb-4">Product Targeting</p>
             <div className="space-y-4">
               <FormField label="Applies To" required>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {['all', 'category'].map((opt) => (
                     <button
                       type="button"
@@ -432,7 +450,7 @@ const handleCategoryChange = (category) => {
                 {form.appliesTo === 'category' && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
                     <FormField label="Category IDs" required hint="Comma-separated MongoDB ObjectIDs">
-                      <div className="grid grid-cols-2 gap-3">
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
   {loadingCategories ? (
     <p className="text-sm text-gray-400">
       Loading categories...
@@ -481,12 +499,13 @@ const handleCategoryChange = (category) => {
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-[#00bc7d] mb-4">Schedule & Limits</p>
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField label="Start Date" required>
                   <Input
                     type="datetime-local"
                     value={form.startDate}
                     onChange={(e) => set('startDate', e.target.value)}
+                    required
                   />
                   {errors.startDate && <p className="text-xs text-red-500">{errors.startDate}</p>}
                 </FormField>
@@ -496,13 +515,14 @@ const handleCategoryChange = (category) => {
                     value={form.endDate}
                     min={form.startDate}
                     onChange={(e) => set('endDate', e.target.value)}
+                    required
                   />
                   {errors.endDate && <p className="text-xs text-red-500">{errors.endDate}</p>}
                 </FormField>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <FormField label="Max Total Uses" hint="Leave empty for unlimited">
+                <FormField required label="Max Total Uses" hint="Leave empty for unlimited">
                   <Input
                     type="number"
                     min="1"
@@ -510,9 +530,10 @@ const handleCategoryChange = (category) => {
                     value={form.maxUses}
                     onChange={(e) => set('maxUses', e.target.value)}
                     onWheel={(e) => e.target.blur()} 
+                    required
                   />
                 </FormField>
-                <FormField label="Per User Limit">
+                <FormField  required label="Per User Limit">
                   <Input
                     type="number"
                     min="1"
@@ -520,6 +541,7 @@ const handleCategoryChange = (category) => {
                     value={form.perUserLimit}
                     onChange={(e) => set('perUserLimit', e.target.value)}
                     onWheel={(e) => e.target.blur()} 
+                    required
                   />
                 </FormField>
               </div>
@@ -534,17 +556,17 @@ const handleCategoryChange = (category) => {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-2 border-t border-gray-100">
             <button
               type="button"
               onClick={onClose}
-              className="cursor-pointer px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition"
+              className="cursor-pointer w-full sm:w-auto px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="cursor-pointer flex items-center gap-2 px-6 py-2.5 bg-[#00bc7d] hover:bg-[#00965b] text-white font-semibold rounded-xl transition shadow-sm text-sm"
+              className="cursor-pointer w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-[#00bc7d] hover:bg-[#00965b] text-white font-semibold rounded-xl transition shadow-sm text-sm"
             >
               {bannerData ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
               {bannerData ? 'Save Changes' : 'Create Banner'}

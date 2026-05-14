@@ -9,9 +9,7 @@ const ProductDetailed = () => {
   return (
     <div>
         <Navbar/>
-        <Productdetail/>
-        <RelatedProducts/>
-        
+        <Productdetail/>       
         <Footer/>
         
     </div>

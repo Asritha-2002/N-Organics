@@ -71,7 +71,7 @@ const SignIn = () => {
     if (isAdmin) {
       navigate("/admin");
     } else {
-      navigate("/");
+      navigate("/account");
     }
 
   } catch (err) {

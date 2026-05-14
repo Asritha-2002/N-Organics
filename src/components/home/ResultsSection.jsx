@@ -36,7 +36,7 @@ export default function ResultsSection() {
         <div className="text-center mb-16 flex flex-col items-center">
           
           {/* <div className="w-48 h-0.5 bg-[#143c2f] mb-8" /> */}
-          <img src={smallLogo} alt="" className="w-10 h-10 mb-5" />
+          <img src={smallLogo} alt="" className="w-25 h-25 mb-5" />
 
           <motion.span
             initial={{ opacity: 0 }}

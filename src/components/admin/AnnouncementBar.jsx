@@ -149,49 +149,53 @@ export default function AnnouncementBar() {
             >
               {/* Main Content Column */}
               <div className="flex flex-col gap-4 w-full">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-2xl border border-gray-200/50 shadow-sm flex items-center justify-center text-xs font-bold"
-                      style={{
-                        backgroundColor: bar.backgroundColor,
-                        color: bar.textColor,
-                      }}
-                    >
-                      A
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-gray-800 text-sm md:text-base">
-                        ID: {bar._id}
-                      </h3>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        Created: {new Date(bar.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  
+  <div className="flex items-center gap-3 min-w-0">
+    <div
+      className="w-10 h-10 shrink-0 rounded-2xl border border-gray-200/50 shadow-sm flex items-center justify-center text-xs font-bold"
+      style={{
+        backgroundColor: bar.backgroundColor,
+        color: bar.textColor,
+      }}
+    >
+      A
+    </div>
 
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${
-                        bar.isActive
-                          ? "bg-green-50 text-green-700 border border-green-200"
-                          : "bg-gray-50 text-gray-500 border border-gray-200"
-                      }`}
-                    >
-                      {bar.isActive ? "Active" : "Inactive"}
-                    </span>
-                    <button
-                      onClick={() => {
-                        setSelectedBar(bar);
-                        setShowModal(true);
-                      }}
-                      className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition duration-200"
-                      title="Edit Announcement"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+    <div className="min-w-0">
+      <h3 className="font-bold text-gray-800 text-sm md:text-base truncate">
+        ID: {bar._id}
+      </h3>
+
+      <p className="text-xs text-gray-400 mt-0.5">
+        Created: {new Date(bar.createdAt).toLocaleDateString()}
+      </p>
+    </div>
+  </div>
+
+  <div className="flex items-center justify-between sm:justify-end gap-3">
+    <span
+      className={`text-xs font-medium px-2.5 py-0.5 rounded-full whitespace-nowrap ${
+        bar.isActive
+          ? "bg-green-50 text-green-700 border border-green-200"
+          : "bg-gray-50 text-gray-500 border border-gray-200"
+      }`}
+    >
+      {bar.isActive ? "Active" : "Inactive"}
+    </span>
+
+    <button
+      onClick={() => {
+        setSelectedBar(bar);
+        setShowModal(true);
+      }}
+      className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition duration-200 shrink-0"
+      title="Edit Announcement"
+    >
+      <Pencil className="w-4 h-4" />
+    </button>
+  </div>
+</div>
 
                 <hr className="border-gray-100/50 my-1" />
 

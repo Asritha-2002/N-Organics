@@ -41,8 +41,10 @@ const bgVariants = {
 
 // ─── Static fallback — pixel-perfect HeroSection2 ────────────────────────────
 
-const StaticFallback = () => (
-  <>
+const StaticFallback = () => {
+  const navigate=useNavigate()
+ return (
+   <>
     <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/70 to-transparent z-[1]" />
     <div className="absolute inset-0 bg-gradient-to-t from-white/40 via-transparent to-white/20 z-[1]" />
 
@@ -100,7 +102,7 @@ const StaticFallback = () => (
           transition={{ delay: 0.8 }}
           className="flex flex-wrap gap-4"
         >
-          <button className="flex items-center gap-2 px-8 py-3 bg-[#457358] text-white rounded-full shadow-md hover:shadow-lg hover:bg-[#1c402f] transition-all duration-300 group cursor-pointer">
+          <button onClick={()=>navigate('/shop')} className="flex items-center gap-2 px-8 py-3 bg-[#457358] text-white rounded-full shadow-md hover:shadow-lg hover:bg-[#1c402f] transition-all duration-300 group cursor-pointer">
             Shop Collection
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>
@@ -124,7 +126,8 @@ const StaticFallback = () => (
       </div>
     </div>
   </>
-);
+ )
+};
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const buildShopUrl = (banner) => {

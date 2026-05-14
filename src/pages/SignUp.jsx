@@ -94,7 +94,7 @@ const handleSubmit = async (e) => {
           Create Your Account
         </h1>
         <p className="text-center text-sm mb-6">
-          Join VetDiag Genomix to access diagnostic services and reports.
+          Join N-Organics for natural skincare products and radiant skin care solutions.
         </p>
 
         <form onSubmit={handleSubmit} className="w-full space-y-4">

@@ -30,10 +30,15 @@ const CLAIMS = [
 ];
 const PACKAGING_TYPES = ["bottle", "tube", "jar", "sachet", "pump", "dropper", "spray", "box", "pouch"];
 const WEIGHT_UNITS = ["ml", "g", "l", "kg", "oz", "fl_oz"];
-const TAX_RATES = [0, 5, 12, 18, 28];
+const TAX_RATES = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28];
 
 const emptyVariant = () => ({
   id: Date.now() + Math.random(),
+  isActive: true,
+  isFeatured: false,
+  isBestseller: false,
+  isNewArrival: false,
+  isLimited: false,
   sku: "",
   attributes: { size: "", shade: "", scent: "", packOf: "" },
   price: { mrp: "", sellingPrice: "" },
@@ -65,7 +70,7 @@ const SectionCard = ({ icon: Icon, title, color = "emerald", children, defaultOp
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <button type="button" onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition">
+        className="w-full flex items-center justify-between px-4 sm:px-6 py-4 hover:bg-gray-50 transition">
         <div className="flex items-center gap-3">
           <div className={cn("p-2 rounded-xl bg-gradient-to-br text-white shadow-sm", colors[color])}>
             <Icon className="w-4 h-4" />
@@ -83,7 +88,7 @@ const SectionCard = ({ icon: Icon, title, color = "emerald", children, defaultOp
             transition={{ duration: 0.25 }}
             className="overflow-hidden"
           >
-            <div className="px-6 pb-6 pt-2 space-y-4">{children}</div>
+            <div className="px-4 sm:px-6 pb-6 pt-2 space-y-4">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -104,7 +109,7 @@ const Field = ({ label, required, hint, children }) => (
 const Input = ({ className = "", ...props }) => (
   <input
     className={cn(
-      "w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-800",
+      "w-full min-w-0 px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-800",
       "placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition",
       className
     )}
@@ -265,7 +270,7 @@ const MediaDropZone = ({ accept, label, multiple, files, onAdd, onRemove, icon: 
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
         onClick={() => ref.current.click()}
-        className="flex flex-col items-center justify-center gap-2 p-6 rounded-2xl border-2 border-dashed border-gray-200 hover:border-emerald-300 bg-gray-50 cursor-pointer transition"
+        className="flex flex-col items-center justify-center gap-2 p-4 sm:p-6 rounded-2xl border-2 border-dashed border-gray-200 hover:border-emerald-300 bg-gray-50 cursor-pointer transition"
       >
         <input ref={ref} type="file" accept={accept} multiple={multiple} className="hidden"
           onChange={(e) => handleFiles(e.target.files)} />
@@ -274,7 +279,7 @@ const MediaDropZone = ({ accept, label, multiple, files, onAdd, onRemove, icon: 
         <p className="text-xs text-gray-400">Drag & drop or click to upload</p>
       </div>
       {files.length > 0 && (
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {files.map((f, i) => (
             <div key={f.id} className="relative group rounded-xl overflow-hidden border border-gray-200 bg-gray-100 aspect-square">
               <img src={f.preview} alt="" className="w-full h-full object-cover" />
@@ -312,9 +317,10 @@ const VariantCard = ({ variant, index, onChange, onRemove, isOnly }) => {
       exit={{ opacity: 0, y: -10 }}
       className="p-4 rounded-2xl border border-gray-100 bg-gray-50 space-y-4"
     >
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <Field label="SKU" required>
-          <Input placeholder="PROD-50ML-ROSE" value={variant.sku}
+          <Input required 
+          placeholder="PROD-50ML-ROSE" value={variant.sku}
             onChange={(e) => set("sku", e.target.value.toUpperCase())} />
         </Field>
         <Field label="Barcode">
@@ -322,18 +328,18 @@ const VariantCard = ({ variant, index, onChange, onRemove, isOnly }) => {
             onChange={(e) => set("barcode", e.target.value)} />
         </Field>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 sm:grid-cols-4 gap-3">
         <Field label="Size"><Input placeholder="50ml" value={variant.attributes.size} onChange={(e) => set("attributes.size", e.target.value)} /></Field>
         <Field label="Shade"><Input placeholder="Rose Beige" value={variant.attributes.shade} onChange={(e) => set("attributes.shade", e.target.value)} /></Field>
         <Field label="Scent"><Input placeholder="Lavender" value={variant.attributes.scent} onChange={(e) => set("attributes.scent", e.target.value)} /></Field>
         <Field label="Pack Of"><Input type="number" min="1" placeholder="1" value={variant.attributes.packOf} onWheel={(e) => e.target.blur()}  onChange={(e) => set("attributes.packOf", e.target.value)} /></Field>
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="MRP (₹)" required><Input type="number" min="0" placeholder="599" value={variant.price.mrp} onWheel={(e) => e.target.blur()}  onChange={(e) => set("price.mrp", e.target.value)} /></Field>
-        <Field label="Selling Price (₹)" required><Input type="number" min="0" placeholder="399" value={variant.price.sellingPrice} onWheel={(e) => e.target.blur()}  onChange={(e) => set("price.sellingPrice", e.target.value)} /></Field>
+      <div className="grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <Field label="MRP (₹)" required><Input required  type="number" min="0" placeholder="599" value={variant.price.mrp} onWheel={(e) => e.target.blur()}  onChange={(e) => set("price.mrp", e.target.value)} /></Field>
+        <Field label="Selling Price (₹)" required><Input required type="number" min="0" placeholder="399" value={variant.price.sellingPrice} onWheel={(e) => e.target.blur()}  onChange={(e) => set("price.sellingPrice", e.target.value)} /></Field>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Field label="Stock Qty" required><Input type="number" min="0" placeholder="100" value={variant.stock.quantity} onWheel={(e) => e.target.blur()}  onChange={(e) => set("stock.quantity", e.target.value)} /></Field>
+      <div className="grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 sm:grid-cols-4 gap-3">
+        <Field label="Stock Qty" required><Input required type="number" min="0" placeholder="100" value={variant.stock.quantity} onWheel={(e) => e.target.blur()}  onChange={(e) => set("stock.quantity", e.target.value)} /></Field>
         <Field label="Low Stock Alert"><Input type="number" min="0" placeholder="10" value={variant.stock.lowStockAlert} onWheel={(e) => e.target.blur()}  onChange={(e) => set("stock.lowStockAlert", e.target.value)} /></Field>
         {/* <Field label="Net Weight"><Input type="number" min="0" placeholder="50" value={variant.weight.value} onWheel={(e) => e.target.blur()}  onChange={(e) => set("weight.value", e.target.value)} /></Field> */}
         {/* <Field label="Unit">
@@ -350,9 +356,9 @@ const VariantCard = ({ variant, index, onChange, onRemove, isOnly }) => {
 const IngredientRow = ({ ing, onChange, onRemove }) => (
   <motion.div
     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-    className="grid grid-cols-12 gap-2 items-end p-3 rounded-xl bg-gray-50 border border-gray-100"
+    className="grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 items-end p-3 rounded-xl bg-gray-50 border border-gray-100"
   >
-    <div className="col-span-3"><Field label="Name"><Input placeholder="Aloe Vera" value={ing.name} onChange={(e) => onChange({ ...ing, name: e.target.value })} /></Field></div>
+    <div className="col-span-3"><Field label="Name" required><Input required placeholder="Aloe Vera" value={ing.name} onChange={(e) => onChange({ ...ing, name: e.target.value })} /></Field></div>
     <div className="col-span-3"><Field label="INCI Name"><Input placeholder="Aloe Barbadensis Leaf Juice" value={ing.inci} onChange={(e) => onChange({ ...ing, inci: e.target.value })} /></Field></div>
     <div className="col-span-2"><Field label="Benefit"><Input placeholder="Hydrates" value={ing.benefit} onChange={(e) => onChange({ ...ing, benefit: e.target.value })} /></Field></div>
     <div className="col-span-1"><Field label="%"><Input type="number" min="0" max="100" placeholder="5" value={ing.percentage} onWheel={(e) => e.target.blur()}  onChange={(e) => onChange({ ...ing, percentage: e.target.value })} /></Field></div>
@@ -370,8 +376,8 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
     tag: null,   // ← single tag (string | null)
     
     shortDescription: "", description: "", highlights: [""],
-    // isFeatured: false, isBestseller: false, isNewArrival: false, isActive: true,
-    isFreeShipping: false, hsn: "", taxRate: 18,
+    isFeatured: false, isBestseller: false, isNewArrival: false, isActive: true,
+    isLimited: false, hsn: "", taxRate: 18,
     skincareDetails: {
       skinType: [], skinConcerns: [], claims: [],
       usage: { howToUse: "", frequency: "", whenToApply: "", amountToUse: "" },
@@ -415,6 +421,16 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!form.tag) {
+    toast.error("Please select a product tag");
+    return;
+  }
+  if (images.length === 0) {
+    toast.error("Please upload at least one product image");
+    return;
+  }
+
     try {
       const token = localStorage.getItem("token");
 
@@ -448,10 +464,10 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
       formData.append("hsn",              form.hsn || "");
       formData.append("taxRate",          String(form.taxRate));
       formData.append("isActive",         String(form.isActive));
-      // formData.append("isFeatured",       String(form.isFeatured));
-      // formData.append("isBestseller",     String(form.isBestseller));
-      // formData.append("isNewArrival",     String(form.isNewArrival));
-      // formData.append("isFreeShipping",   String(form.isFreeShipping));
+      formData.append("isFeatured",       String(form.isFeatured));
+      formData.append("isBestseller",     String(form.isBestseller));
+      formData.append("isNewArrival",     String(form.isNewArrival));
+      formData.append("isLimited",   String(form.isLimited));
 
       // JSON fields
       formData.append("highlights",       JSON.stringify(form.highlights));
@@ -532,9 +548,9 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
 
       {/* ── Basic Info ── */}
       <SectionCard icon={Info} title="Basic Information" color="emerald">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Field label="Product Name" required>
-            <Input placeholder="Vitamin C Glow Serum" value={form.name} onChange={(e) => set("name", e.target.value)} />
+            <Input required placeholder="Vitamin C Glow Serum" value={form.name} onChange={(e) => set("name", e.target.value)} />
           </Field>
           <Field label="Brand">
             <Input value={form.brand} onChange={(e) => set("brand", e.target.value)} />
@@ -542,7 +558,7 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
         </div>
 
         {/* Category + Category Image — side by side */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Field label="Sub Category">
             <Input placeholder="Vitamin C" value={form.subCategory} onChange={(e) => set("subCategory", e.target.value)} />
           </Field>
@@ -553,9 +569,10 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
               <FolderOpen className="w-4 h-4 text-emerald-600" />
               <span className="text-xs font-bold uppercase tracking-widest text-emerald-700">Category</span>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
               <Field label="Category Name" required>
                 <Input
+                required
                   placeholder="Face Serum"
                   value={form.category}
                   onChange={(e) => set("category", e.target.value)}
@@ -599,15 +616,15 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
             {/* Single tag selector */}
-            <Field label="Select Tag" hint="Pick one — shown as a badge on the product card">
+            <Field label="Select Tag" hint="Pick one — shown as a badge on the product card" required>
               <div className="flex flex-wrap gap-2">
                 {TAGS.map((opt) => {
                   const active = form.tag === opt;
                   const tc = TAG_COLORS[opt];
                   return (
-                    <button key={opt} type="button"
+                    <button key={opt} type="button" 
                       onClick={() => handleTagChange(active ? null : opt)}
                       className={cn(
                         "px-3 py-1.5 rounded-xl text-xs font-semibold border capitalize transition-all",
@@ -709,12 +726,6 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
     />
   </div>
 </Field>
-        {/* <div className="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-2xl">
-          <Toggle checked={form.isFeatured}    onChange={(v) => set("isFeatured", v)}    label="Featured" />
-          <Toggle checked={form.isBestseller}  onChange={(v) => set("isBestseller", v)}  label="Bestseller" />
-          <Toggle checked={form.isNewArrival}  onChange={(v) => set("isNewArrival", v)}  label="New Arrival" />
-          <Toggle checked={form.isFreeShipping}onChange={(v) => set("isFreeShipping", v)} label="Free Shipping" />
-        </div> */}
       </SectionCard>
 
       {/* ── Media ── */}
@@ -757,6 +768,7 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
                     </button>
                   )}
                 </div>
+                
               </div>
               <VariantCard variant={v} index={i} isOnly={variants.length === 1}
                 onChange={(updated) => { const arr = [...variants]; arr[i] = updated; setVariants(arr); }} />
@@ -766,12 +778,82 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
                   onAdd={(arr) => setVariantImageGroups(prev => { const g = [...prev]; if (!g[i]) g[i] = { id: Date.now(), images: [] }; g[i].images = [...g[i].images, ...arr]; return g; })}
                   onRemove={(id) => setVariantImageGroups(prev => { const g = [...prev]; if (g[i]) g[i].images = g[i].images.filter(img => img.id !== id); return g; })} />
               </Field>
+              <div className="p-4 bg-gray-50 rounded-2xl space-y-4">
+
+  <Field label="Product Status">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-800">
+          {v.isActive ? "Active" : "Inactive"}
+        </p>
+
+        <p className="text-xs text-gray-500">
+          {v.isActive
+            ? "This variant will be visible."
+            : "This variant will stay hidden."}
+        </p>
+      </div>
+
+      <Toggle
+        checked={v.isActive}
+        onChange={(val) => {
+          const arr = [...variants];
+          arr[i].isActive = val;
+          setVariants(arr);
+        }}
+      />
+    </div>
+  </Field>
+
+  <div className="flex flex-wrap gap-4">
+    <Toggle
+      checked={v.isFeatured}
+      onChange={(val) => {
+        const arr = [...variants];
+        arr[i].isFeatured = val;
+        setVariants(arr);
+      }}
+      label="Featured"
+    />
+
+    <Toggle
+      checked={v.isBestseller}
+      onChange={(val) => {
+        const arr = [...variants];
+        arr[i].isBestseller = val;
+        setVariants(arr);
+      }}
+      label="Bestseller"
+    />
+
+    <Toggle
+      checked={v.isNewArrival}
+      onChange={(val) => {
+        const arr = [...variants];
+        arr[i].isNewArrival = val;
+        setVariants(arr);
+      }}
+      label="New Arrival"
+    />
+
+    <Toggle
+      checked={v.isLimited}
+      onChange={(val) => {
+        const arr = [...variants];
+        arr[i].isLimited = val;
+        setVariants(arr);
+      }}
+      label="Limited"
+    />
+  </div>
+
+</div>
             </motion.div>
           ))}
         </AnimatePresence>
         <button type="button"
           onClick={() => { setVariants([...variants, emptyVariant()]); setVariantImageGroups(prev => [...prev, { id: Date.now(), images: [] }]); }}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-emerald-200 text-emerald-600 hover:bg-emerald-50 text-sm font-medium transition w-full justify-center">
+          className="flex w-full sm:w-auto justify-center items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-emerald-200 text-emerald-600 hover:bg-emerald-50 text-sm font-medium transition w-full justify-center">
           <Plus className="w-4 h-4" /> Add Variant
         </button>
       </SectionCard>
@@ -781,7 +863,7 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
         <Field label="Skin Type"><PillToggle value={form.skincareDetails.skinType} options={SKIN_TYPES} onChange={(v) => set("skincareDetails.skinType", v)} /></Field>
         <Field label="Skin Concerns"><PillToggle value={form.skincareDetails.skinConcerns} options={SKIN_CONCERNS} onChange={(v) => set("skincareDetails.skinConcerns", v)} /></Field>
         <Field label="Claims"><PillToggle value={form.skincareDetails.claims} options={CLAIMS} onChange={(v) => set("skincareDetails.claims", v)} /></Field>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Field label="Frequency"><Input placeholder="Twice daily" value={form.skincareDetails.usage.frequency} onChange={(e) => set("skincareDetails.usage.frequency", e.target.value)} /></Field>
           <Field label="When To Apply"><Input placeholder="Morning & Night" value={form.skincareDetails.usage.whenToApply} onChange={(e) => set("skincareDetails.usage.whenToApply", e.target.value)} /></Field>
           <Field label="Amount To Use"><Input placeholder="Pea-sized amount" value={form.skincareDetails.usage.amountToUse} onChange={(e) => set("skincareDetails.usage.amountToUse", e.target.value)} /></Field>
@@ -790,7 +872,7 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
         <Field label="How To Use">
           <Textarea rows={3} placeholder="Step 1: Cleanse face…" value={form.skincareDetails.usage.howToUse} onChange={(e) => set("skincareDetails.usage.howToUse", e.target.value)} />
         </Field>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Field label="Shelf Life (months)"><Input type="number" placeholder="24" value={form.skincareDetails.shelfLife.months} onChange={(e) => set("skincareDetails.shelfLife.months", e.target.value)} /></Field>
           <Field label="PAO (months)"><Input type="number" placeholder="12" value={form.skincareDetails.shelfLife.paoMonths} onChange={(e) => set("skincareDetails.shelfLife.paoMonths", e.target.value)} /></Field>
         </div>
@@ -816,7 +898,7 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
 
       {/* ── Packaging ── */}
       <SectionCard icon={Box} title="Packaging, Shipping & Tax" color="slate" defaultOpen={false}>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Field label="Package Type">
             <Select value={form.packaging.type} onChange={(e) => set("packaging.type", e.target.value)}>
               <option value="">Select…</option>
@@ -830,7 +912,7 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
           {/* <Field label="Height (cm)"><Input type="number" placeholder="12" value={form.packaging.dimensions.height} onChange={(e) => set("packaging.dimensions.height", e.target.value)} /></Field> */}
         </div>
         <Toggle checked={form.packaging.isRecyclable} onChange={(v) => set("packaging.isRecyclable", v)} label="Recyclable packaging" />
-        <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-100">
+        <div className="grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2 border-t border-gray-100">
           <Field label="HSN Code"><Input placeholder="33049910" value={form.hsn} onChange={(e) => set("hsn", e.target.value)} /></Field>
           <Field label="GST Tax Rate (%)">
             <Select value={form.taxRate} onChange={(e) => set("taxRate", Number(e.target.value))}>
@@ -841,14 +923,18 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
       </SectionCard>
 
       {/* ── Footer ── */}
-      <div className="flex items-center justify-end gap-3 sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4 rounded-b-2xl">
+      <div className="flex flex-col sm:flex-row
+items-stretch sm:items-center
+justify-end
+gap-3 sticky bottom-0 bg-white border-t border-gray-100 px-4 sm:px-6
+py-4 rounded-b-2xl">
         <button type="button" onClick={onClose}
           className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition">
           Cancel
         </button>
         <button type="submit"
           className={cn(
-            "flex items-center gap-2 px-8 py-2.5 rounded-xl text-sm font-semibold text-white shadow-sm transition",
+            "flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl text-sm font-semibold text-white shadow-sm transition",
             submitted ? "bg-emerald-500" : "bg-emerald-600 hover:bg-emerald-700"
           )}>
           {submitted ? <><Check className="w-4 h-4" /> Saved!</> : <><Package className="w-4 h-4" /> Add Product</>}
@@ -873,16 +959,21 @@ export default function ProductModal({ open, onClose,fetchProducts, fetchCategor
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 40, scale: 0.97 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto py-8 px-4"
+            className="
+fixed inset-0 z-50 
+flex items-start justify-center 
+overflow-y-auto
+p-2 sm:p-4 md:p-6
+"
           >
             <div className="w-full max-w-4xl bg-gray-50 rounded-2xl shadow-2xl overflow-hidden">
-              <div className="flex items-center justify-between bg-white px-6 py-5 border-b border-gray-100 sticky top-0 z-10">
+              <div className="flex items-center justify-between bg-white px-4 sm:px-6 py-5 border-b border-gray-100 sticky top-0 z-10">
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow">
                     <Package className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-gray-800">Add New Product</h2>
+                    <h2 className="text-base sm:text-lg font-bold text-gray-800">Add New Product</h2>
                     <p className="text-xs text-gray-400">N-Organics · Natural Skincare</p>
                   </div>
                 </div>
@@ -891,7 +982,7 @@ export default function ProductModal({ open, onClose,fetchProducts, fetchCategor
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <div className="p-6 space-y-4 overflow-y-auto max-h-[80vh]">
+              <div className="p-4 sm:p-6 space-y-4 overflow-y-auto max-h-[85vh] sm:max-h-[90vh]">
                 <AddProductForm onClose={onClose} fetchProducts={fetchProducts} fetchCategories={fetchCategories} />
               </div>
             </div>

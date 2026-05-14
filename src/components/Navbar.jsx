@@ -13,6 +13,8 @@ const links = [
   { name: "Reviews", href: "/reviews" },
   { name: "Contact", href: "/contact" },
 ];
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+import {useCart} from "../pages/CartContext"
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -20,6 +22,7 @@ export default function Navbar() {
 
   const navigate = useNavigate();
   const location = useLocation();
+    const { cartCount, setCartCount } = useCart();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -33,6 +36,8 @@ export default function Navbar() {
       document.body.style.overflow = "";
     };
   }, [mobileOpen]);
+
+
 
   // ✅ Handle scroll after navigation
   useEffect(() => {
@@ -144,7 +149,7 @@ export default function Navbar() {
   if (isAdmin === "true") {
     navigate("/admin");
   } else if (isAdmin === "false") {
-    navigate("/profile");
+    navigate("/account");
   } else {
     // This catches null or undefined values when the user is not signed in
     navigate("/sign-in");
@@ -159,6 +164,7 @@ export default function Navbar() {
                     ? "text-[#cbd1c7] hover:text-[#c8fec0]"
                     : "text-gray-800 hover:text-[#457358]"
                 }`}
+                onClick={()=>navigate('/cart')}
               />
 
               {/* Badge */}
@@ -169,7 +175,7 @@ export default function Navbar() {
                     : "bg-[#457358] text-white" // Colors when not scrolled (default)
                 }`}
               >
-                0
+                {cartCount || 0}
               </span>
             </div>
           </div>
@@ -228,16 +234,41 @@ export default function Navbar() {
                 </div>
 
                 <div className="flex items-center gap-6 border-t border-white/10 pt-4">
-                  <Search className="h-5 w-5 text-white transition hover:text-[#e8b130]" />
-                  <Heart className="h-5 w-5 text-white transition hover:text-[#e8b130]" />
-                  <User className="h-5 w-5 text-white transition hover:text-[#e8b130]" />
-                  <div className="relative">
-                    <ShoppingBag className="h-5 w-5 text-white transition hover:text-[#e8b130]" />
-                    <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#e8b130] text-[10px] text-black">
-                      0
-                    </span>
-                  </div>
-                </div>
+
+  {/* USER */}
+  <User
+    className="h-5 w-5 cursor-pointer text-white transition hover:text-[#e8b130]"
+    onClick={() => {
+      setMobileOpen(false);
+
+      const isAdmin = localStorage.getItem("isAdmin");
+
+      if (isAdmin === "true") {
+        navigate("/admin");
+      } else if (isAdmin === "false") {
+        navigate("/account");
+      } else {
+        navigate("/sign-in");
+      }
+    }}
+  />
+
+  {/* CART */}
+  <div
+    className="relative cursor-pointer"
+    onClick={() => {
+      setMobileOpen(false);
+      navigate("/cart");
+    }}
+  >
+    <ShoppingBag className="h-5 w-5 text-white transition hover:text-[#e8b130]" />
+
+    {/* Dynamic Cart Count */}
+    <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#e8b130] text-[10px] text-black">
+      {cartCount || 0}
+    </span>
+  </div>
+</div>
               </div>
             </motion.div>
           </>
