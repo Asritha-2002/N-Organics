@@ -1,6 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { MapPin, Mail, Phone, ImagePlus, ArrowRight } from "lucide-react";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+import toast from "react-hot-toast"
 import { 
   FaLinkedin, 
   FaXTwitter, 
@@ -59,12 +61,14 @@ const handleChange = (e) => {
 const handleSubmit = async (e) => {
   e.preventDefault();
   setLoading(true);
-
+ 
   try {
-    const res = await fetch("http://localhost:2101/api/contact", {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${BASE_URL}/contact`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(formData),
     });
@@ -75,14 +79,14 @@ const handleSubmit = async (e) => {
       throw new Error(data.message || "Failed to send message");
     }
 
-    alert(data.message);
+    toast.success(data.message);
     setFormData({
       name: "",
       email: "",
       description: "",
     });
   } catch (error) {
-    alert(error.message);
+    toast.error(error.message);
   } finally {
     setLoading(false);
   }
