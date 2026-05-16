@@ -60,6 +60,16 @@ function App() {
         }}
       />
     <BrowserRouter>
+     <Toaster
+        position="top-center"
+        reverseOrder={false}
+        toastOptions={{
+          duration: 3000,
+          style: {
+            zIndex: 999999,
+          },
+        }}
+      />
     
     <ScrollToTop/>
       <Routes>

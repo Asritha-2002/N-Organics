@@ -43,6 +43,50 @@ const contactInfo = [
 ];
 
 const ContactContent = () => {
+  const [formData, setFormData] = React.useState({
+  name: "",
+  email: "",
+  description: "",
+});
+
+const [loading, setLoading] = React.useState(false);
+
+const handleChange = (e) => {
+  const { name, value } = e.target;
+  setFormData((prev) => ({ ...prev, [name]: value }));
+};
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+
+  try {
+    const res = await fetch("http://localhost:2101/api/contact", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to send message");
+    }
+
+    alert(data.message);
+    setFormData({
+      name: "",
+      email: "",
+      description: "",
+    });
+  } catch (error) {
+    alert(error.message);
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <section className="bg-[#faf8f5] pb-16 sm:py-20 lg:pb-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -126,7 +170,8 @@ const ContactContent = () => {
             transition={{ duration: 0.75, delay: 0.1 }}
             className="rounded-[28px] border border-[#e7dfd4] bg-white p-6 shadow-[0_10px_30px_rgba(20,60,47,0.06)] sm:p-8 lg:p-10"
           >
-            <h3 className="text-2xl font-medium text-[#143c2f]">
+          <div className="flex h-full flex-col justify-center">
+              <h3 className="text-2xl font-medium text-[#143c2f]">
               Send a Message
             </h3>
             <p className="mt-2 text-sm leading-7 text-[#6f6a61]">
@@ -134,28 +179,34 @@ const ContactContent = () => {
               possible.
             </p>
 
-            <form className="mt-8 space-y-5">
+            <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-[#143c2f]">
                     Name
                   </label>
                   <input
-                    type="text"
-                    placeholder="Your full name"
-                    className="w-full rounded-2xl border border-[#ddd4c7] bg-[#faf8f5] px-4 py-3 text-sm text-[#143c2f] outline-none transition placeholder:text-[#9b9489] focus:border-[#457358] focus:bg-white"
-                  />
+  type="text"
+  name="name"
+  value={formData.name}
+  onChange={handleChange}
+  placeholder="Your full name"
+  className="w-full rounded-2xl border border-[#ddd4c7] bg-[#faf8f5] px-4 py-3 text-sm text-[#143c2f] outline-none transition placeholder:text-[#9b9489] focus:border-[#457358] focus:bg-white"
+/>
                 </div>
 
                 <div>
                   <label className="mb-2 block text-sm font-medium text-[#143c2f]">
                     Email
                   </label>
-                  <input
-                    type="email"
-                    placeholder="Your email address"
-                    className="w-full rounded-2xl border border-[#ddd4c7] bg-[#faf8f5] px-4 py-3 text-sm text-[#143c2f] outline-none transition placeholder:text-[#9b9489] focus:border-[#457358] focus:bg-white"
-                  />
+                 <input
+  type="email"
+  name="email"
+  value={formData.email}
+  onChange={handleChange}
+  placeholder="Your email address"
+  className="w-full rounded-2xl border border-[#ddd4c7] bg-[#faf8f5] px-4 py-3 text-sm text-[#143c2f] outline-none transition placeholder:text-[#9b9489] focus:border-[#457358] focus:bg-white"
+/>
                 </div>
               </div>
 
@@ -164,31 +215,25 @@ const ContactContent = () => {
                   Description
                 </label>
                 <textarea
-                  rows="5"
-                  placeholder="Write your message here..."
-                  className="w-full resize-none rounded-2xl border border-[#ddd4c7] bg-[#faf8f5] px-4 py-3 text-sm text-[#143c2f] outline-none transition placeholder:text-[#9b9489] focus:border-[#457358] focus:bg-white"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-[#143c2f]">
-                  Upload Image
-                </label>
-                <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-dashed border-[#cfc3b3] bg-[#faf8f5] px-4 py-4 text-sm text-[#6f6a61] transition hover:border-[#457358] hover:bg-white">
-                  <ImagePlus className="h-5 w-5 text-[#457358]" />
-                  <span>Click to upload an image</span>
-                  <input type="file" className="hidden" />
-                </label>
+  rows="5"
+  name="description"
+  value={formData.description}
+  onChange={handleChange}
+  placeholder="Write your message here..."
+  className="w-full resize-none rounded-2xl border border-[#ddd4c7] bg-[#faf8f5] px-4 py-3 text-sm text-[#143c2f] outline-none transition placeholder:text-[#9b9489] focus:border-[#457358] focus:bg-white"
+/>
               </div>
 
              <button
   type="submit"
-  className="inline-flex items-center gap-2 rounded-full bg-[#457358] px-6 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-[#1c402f] shadow-md hover:shadow-lg group cursor-pointer"
+  disabled={loading}
+  className="inline-flex items-center gap-2 rounded-full bg-[#457358] px-6 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-[#1c402f] shadow-md hover:shadow-lg group cursor-pointer disabled:opacity-70"
 >
-  Submit Message
+  {loading ? "Sending..." : "Submit Message"}
   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
 </button>
             </form>
+          </div>
           </motion.div>
         </div>
       </div>

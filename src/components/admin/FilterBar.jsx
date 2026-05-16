@@ -55,8 +55,8 @@ export default function FilterBar({
           className="border border-gray-200 bg-[#f6f8f7] focus:outline-none rounded-xl px-3 py-2 bg-gray-50 text-sm"
         >
           <option value="all">All Stock</option>
-          <option value="low">Low Stock (&lt; 10)</option>
-          <option value="medium">Medium (10-50)</option>
+          <option value="low">Low Stock (&lt; 11)</option>
+          <option value="medium">Medium (11-50)</option>
           <option value="high">High Stock (&gt; 50)</option>
         </select>
 

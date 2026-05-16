@@ -18,10 +18,6 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 const cn = (...c) => c.filter(Boolean).join(" ");
 const fmt = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
 
-// ─── Derive which items the bestBanner applies to (frontend cross-reference) ──
-// Since the API's bestBanner object doesn't include itemBreakdown in the
-// response shape, we re-derive eligibility on the frontend using the same
-// appliesTo logic so we can show per-item savings badges.
 const getBannerEligibleItemIds = (banner, items) => {
   if (!banner || !items?.length) return new Set();
 
@@ -562,7 +558,7 @@ const fetchDefaultAddress = useCallback(async () => {
     const json = await res.json();
 
     if (json.success) {
-      setDefaultAddress(json.data);
+      setDefaultAddress(json.success ? json.data : null);
     } else {
       setDefaultAddress(null);
     }

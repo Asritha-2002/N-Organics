@@ -90,7 +90,7 @@ const PACKAGING_TYPES = [
   "pouch",
 ];
 const WEIGHT_UNITS = ["ml", "g", "l", "kg", "oz", "fl_oz"];
-const TAX_RATES = [0, 5, 12, 18, 28];
+const TAX_RATES = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28];
 
 const cn = (...c) => c.filter(Boolean).join(" ");
 
@@ -794,74 +794,130 @@ const VariantEditor = ({
 };
 
 // ─── Ingredient Row ───────────────────────────────────────────────────────────
-const IngredientRow = ({ ing, onChange, onRemove }) => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end p-3 rounded-xl bg-gray-50 border border-gray-100">
-    <div className="col-span-3">
-      <Field label="Name" required>
-        {" "}
-        <Input
-          placeholder="Aloe Vera"
-          value={ing.name || ""}
-          onChange={(e) => onChange({ ...ing, name: e.target.value })}
-          required
+const IngredientRow = ({ ing, onChange, onRemove }) => {
+  const fileRef = useRef();
+
+  const handleImage = (file) => {
+    if (!file || !file.type.startsWith("image/")) return;
+
+    onChange({
+      ...ing,
+      image: {
+        file,
+        preview: URL.createObjectURL(file),
+        existing: false,
+      },
+    });
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="p-4 rounded-2xl bg-gray-50 border border-gray-100 space-y-4"
+    >
+      {/* Top */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1">
+          <Field label="Ingredient Name" required>
+            <Input
+              required
+              placeholder="Aloe Vera"
+              value={ing.name || ""}
+              onChange={(e) =>
+                onChange({
+                  ...ing,
+                  name: e.target.value,
+                })
+              }
+            />
+          </Field>
+        </div>
+
+        <button
+          type="button"
+          onClick={onRemove}
+          className="mt-6 p-2 rounded-xl text-red-400 hover:bg-red-50 transition"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Description */}
+      <Field label="Description">
+        <Textarea
+          rows={3}
+          placeholder="Describe ingredient benefits..."
+          value={ing.description || ""}
+          onChange={(e) =>
+            onChange({
+              ...ing,
+              description: e.target.value,
+            })
+          }
         />
       </Field>
-    </div>
-    <div className="col-span-3">
-      <Field label="INCI">
-        {" "}
-        <Input
-          placeholder="INCI"
-          value={ing.inci || ""}
-          onChange={(e) => onChange({ ...ing, inci: e.target.value })}
-        />
-      </Field>
-    </div>
-    <div className="col-span-2">
-      <Field label="Benefit">
-        <Input
-          placeholder="Hydrates"
-          value={ing.benefit || ""}
-          onChange={(e) => onChange({ ...ing, benefit: e.target.value })}
-        />
-      </Field>
-    </div>
-    <div className="col-span-1">
-      <Field label="%">
-        {" "}
-        <Input
-          type="number"
-          min="0"
-          max="100"
-          placeholder="5"
-          onWheel={(e) => e.target.blur()}
-          value={ing.percentage ?? ""}
-          onChange={(e) => onChange({ ...ing, percentage: e.target.value })}
-        />
-      </Field>
-    </div>
-    <div className="col-span-2 pb-1">
-      <Toggle
-        checked={!!ing.isKeyActive}
-        onChange={(v) => onChange({ ...ing, isKeyActive: v })}
-        label={<span className="text-xs text-gray-500">Key</span>}
-      />
-    </div>
-    <div className="col-span-1 pb-1">
-      <button
-        type="button"
-        onClick={onRemove}
-        className="p-2 rounded-xl text-red-400 hover:bg-red-50 transition"
-      >
-        <Trash2 className="w-4 h-4" />
-      </button>
-    </div>
-  </motion.div>
-);
+
+      {/* Image */}
+      <div className="space-y-2">
+        <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+          Ingredient Image
+        </label>
+
+        {!ing.image ? (
+          <div
+            onClick={() => fileRef.current?.click()}
+            className="flex flex-col items-center justify-center gap-2 p-5 rounded-2xl border-2 border-dashed border-gray-200 hover:border-emerald-300 bg-white cursor-pointer transition"
+          >
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => handleImage(e.target.files[0])}
+            />
+
+            <ImageIcon className="w-6 h-6 text-gray-300" />
+
+            <p className="text-sm text-gray-500">
+              Upload ingredient image
+            </p>
+          </div>
+        ) : (
+          <div className="relative w-40 rounded-2xl overflow-hidden border border-gray-200 group">
+            <img
+              src={ing.image.preview}
+              alt=""
+              className="w-full h-40 object-cover"
+            />
+
+            {ing.image.existing && (
+              <span className="absolute top-2 right-2 text-[10px] bg-sky-500 text-white px-2 py-0.5 rounded-md font-bold">
+                Saved
+              </span>
+            )}
+
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() =>
+                  onChange({
+                    ...ing,
+                    image: null,
+                  })
+                }
+                className="p-2 bg-red-500 rounded-xl text-white"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
 
 // ─── Edit Product Form ────────────────────────────────────────────────────────
 function EditProductForm({
@@ -1013,7 +1069,20 @@ function EditProductForm({
       ),
     );
 
-    setIngredients(product.ingredients?.map((i) => ({ ...i })) || []);
+    setIngredients(
+  product.ingredients?.map((i, idx) => ({
+    ...i,
+    id: i._id || idx,
+    image: i.image?.url
+      ? {
+          preview: i.image.url,
+          existing: true,
+          public_id: i.image.public_id,
+          altText: i.image.altText || "",
+        }
+      : null,
+  })) || [],
+);
   }, [product]);
 
   const set = (path, val) => {
@@ -1066,16 +1135,24 @@ function EditProductForm({
         }),
       );
 
-      const cleanedIngredients = ingredients.map(({ _id, ...i }) => ({
-        ...i,
-        percentage:
-          i.percentage !== "" && i.percentage !== undefined
-            ? Number(i.percentage)
-            : undefined,
-        isKeyActive: !!i.isKeyActive,
-      }));
+      const cleanedIngredients = ingredients.map((i, index) => ({
+  name: i.name,
+  description: i.description,
 
-      const fd = new FormData();
+  image: i.image?.existing
+    ? {
+        public_id: i.image.public_id,
+      }
+    : null,
+}));
+const fd = new FormData();
+ingredients.forEach((ing, index) => {
+  if (ing.image && !ing.image.existing && ing.image.file) {
+    fd.append(`ingredientImage_${index}`, ing.image.file);
+  }
+});
+
+      
       fd.append("name", form.name || "");
       fd.append("brand", form.brand || "");
       fd.append("category", form.category || "");
@@ -1195,14 +1272,13 @@ function EditProductForm({
     isLimited: false,
   });
 
-  const emptyIngredient = () => ({
-    id: Date.now() + Math.random(),
-    name: "",
-    inci: "",
-    percentage: "",
-    isKeyActive: false,
-    benefit: "",
-  });
+const emptyIngredient = () => ({
+  id: Date.now() + Math.random(),
+  name: "",
+  description: "",
+  image: null,
+  preview: "",
+});
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">

@@ -310,32 +310,58 @@ const fetchBuyNow = useCallback(async () => {
 }, [fetchBuyNow, fetchDefaultAddress]); // ← no buyNowId here either
 
   // ── Update quantity ──────────────────────────────────────────────────────
-  const handleQuantityChange = async (newQty) => {
-if (newQty < 1) return;
+const handleQuantityChange = async (newQty) => {
+  if (newQty < 1) return;
 
-if (
-  data?.item?.maxAllowedQuantity &&
-  newQty > data.item.maxAllowedQuantity
-) {
-  return;
-}
-    setUpdatingQty(true);
-    try {
-      const res  = await fetch(`${BASE_URL}/buynow/quantity`, {
-        method:  "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body:    JSON.stringify({ quantity: newQty }),
-      });
-      const json = await res.json();
-      if (!json.success) { toast.error(json.message || "Failed to update quantity"); return; }
-      setQuantity(newQty);
-      await fetchBuyNow();
-    } catch {
-      toast.error("Failed to update quantity");
-    } finally {
-      setUpdatingQty(false);
+  if (
+    data?.item?.maxAllowedQuantity &&
+    newQty > data.item.maxAllowedQuantity
+  ) {
+    return;
+  }
+
+  setUpdatingQty(true);
+
+  try {
+    const res = await fetch(`${BASE_URL}/buynow/quantity`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ quantity: newQty }),
+    });
+
+    const json = await res.json();
+
+    // ❌ Failed
+    if (!res.ok || !json.success) {
+      toast.error(json.message || "Failed to update quantity");
+
+      // Auto clamp like cart
+      if (json.maxAllowed) {
+        setQuantity(json.maxAllowed);
+      }
+
+      return;
     }
-  };
+
+    // ✅ LOW STOCK WARNING
+    if (json.warning) {
+      toast(json.warning, { icon: "⚠️" });
+    }
+
+    // ✅ Success
+    setQuantity(newQty);
+
+    await fetchBuyNow();
+
+  } catch (err) {
+    toast.error(err.message || "Failed to update quantity");
+  } finally {
+    setUpdatingQty(false);
+  }
+};
 
   // ── Apply Voucher ────────────────────────────────────────────────────────
   const handleApplyVoucher = async (code) => {
@@ -372,16 +398,26 @@ if (
 
   // ── Place Order ──────────────────────────────────────────────────────────
   const handlePlaceOrder = async () => {
-    if (!defaultAddress) {
-      toast("Please add a delivery address to proceed", { icon: "⚠️" });
-      return;
-    }
+     if (!defaultAddress) {
+    toast(
+  "Please add a delivery address to proceed",
+  {
+    icon: "⚠️",
+  }
+);
+
+setTimeout(() => {
+  navigate("/account/addresses");
+}, 2600);
+
+    return;
+  }
     if (!data?.item?.isAvailable) {
       toast.error("This item is currently unavailable");
       return;
     }
     setCheckingOut(true);
-    navigate("/checkout", {
+    navigate("/checkout/payment", {
       state: {
         buyNowId,
         buyNowData: data,

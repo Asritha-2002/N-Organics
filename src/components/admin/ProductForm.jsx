@@ -51,7 +51,10 @@ const emptyVariant = () => ({
 
 const emptyIngredient = () => ({
   id: Date.now() + Math.random(),
-  name: "", inci: "", percentage: "", isKeyActive: false, benefit: "",
+  name: "",
+  description: "",
+  image: null,
+  preview: "",
 });
 
 const cn = (...classes) => classes.filter(Boolean).join(" ");
@@ -353,21 +356,118 @@ const VariantCard = ({ variant, index, onChange, onRemove, isOnly }) => {
 };
 
 // ─── Ingredient Row ───────────────────────────────────────────────────────────
-const IngredientRow = ({ ing, onChange, onRemove }) => (
-  <motion.div
-    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-    className="grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 items-end p-3 rounded-xl bg-gray-50 border border-gray-100"
-  >
-    <div className="col-span-3"><Field label="Name" required><Input required placeholder="Aloe Vera" value={ing.name} onChange={(e) => onChange({ ...ing, name: e.target.value })} /></Field></div>
-    <div className="col-span-3"><Field label="INCI Name"><Input placeholder="Aloe Barbadensis Leaf Juice" value={ing.inci} onChange={(e) => onChange({ ...ing, inci: e.target.value })} /></Field></div>
-    <div className="col-span-2"><Field label="Benefit"><Input placeholder="Hydrates" value={ing.benefit} onChange={(e) => onChange({ ...ing, benefit: e.target.value })} /></Field></div>
-    <div className="col-span-1"><Field label="%"><Input type="number" min="0" max="100" placeholder="5" value={ing.percentage} onWheel={(e) => e.target.blur()}  onChange={(e) => onChange({ ...ing, percentage: e.target.value })} /></Field></div>
-    <div className="col-span-2 pb-1"><Toggle checked={ing.isKeyActive} onChange={(v) => onChange({ ...ing, isKeyActive: v })} label={<span className="text-xs text-gray-500">Key</span>} /></div>
-    <div className="col-span-1 pb-1">
-      <button type="button" onClick={onRemove} className="p-2 rounded-xl text-red-400 hover:bg-red-50 transition"><Trash2 className="w-4 h-4" /></button>
-    </div>
-  </motion.div>
-);
+const IngredientRow = ({ ing, index, onChange, onRemove }) => {
+  const imageRef = useRef();
+
+  const handleImage = (file) => {
+    if (!file || !file.type.startsWith("image/")) return;
+
+    onChange({
+      ...ing,
+      image: file,
+      preview: URL.createObjectURL(file),
+    });
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      className="p-4 rounded-2xl border border-gray-100 bg-gray-50 space-y-4"
+    >
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-gray-700">
+          Ingredient {index + 1}
+        </h3>
+
+        <button
+          type="button"
+          onClick={onRemove}
+          className="p-2 rounded-xl hover:bg-red-50 text-red-500 transition"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* FIRST 4 INGREDIENTS => IMAGE */}
+      {index < 4 && (
+        <div>
+          {!ing.preview ? (
+            <div
+              onClick={() => imageRef.current?.click()}
+              className="h-36 rounded-2xl border-2 border-dashed border-gray-200 bg-white flex flex-col items-center justify-center cursor-pointer hover:border-emerald-300 transition"
+            >
+              <input
+                ref={imageRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleImage(e.target.files[0])}
+              />
+
+              <ImageIcon className="w-6 h-6 text-gray-400 mb-2" />
+
+              <p className="text-sm text-gray-500">
+                Upload Ingredient Image
+              </p>
+            </div>
+          ) : (
+            <div className="relative rounded-2xl overflow-hidden border border-gray-200">
+              <img
+                src={ing.preview}
+                alt=""
+                className="w-full h-40 object-cover"
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  onChange({
+                    ...ing,
+                    image: null,
+                    preview: "",
+                  })
+                }
+                className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      <Field label="Ingredient Name" required>
+        <Input
+          required
+          placeholder="Aloe Vera"
+          value={ing.name}
+          onChange={(e) =>
+            onChange({
+              ...ing,
+              name: e.target.value,
+            })
+          }
+        />
+      </Field>
+
+      <Field label="Description">
+        <Textarea
+          rows={3}
+          placeholder="Hydrates and soothes the skin..."
+          value={ing.description}
+          onChange={(e) =>
+            onChange({
+              ...ing,
+              description: e.target.value,
+            })
+          }
+        />
+      </Field>
+    </motion.div>
+  );
+};
 
 // ─── Add Product Form ─────────────────────────────────────────────────────────
 export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
@@ -401,7 +501,7 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
   const [categoryImage, setCategoryImage] = useState(null); // { id, file, preview }
   const [tagImage, setTagImage]           = useState(null); // { id, file, preview }
   const [submitted, setSubmitted]         = useState(false);
-
+  const [loading, setLoading] = useState(false);
   // When tag changes, clear tagImage if tag is removed
   const handleTagChange = (val) => {
     setForm((p) => ({ ...p, tag: val }));
@@ -430,7 +530,7 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
     toast.error("Please upload at least one product image");
     return;
   }
-
+  setLoading(true);
     try {
       const token = localStorage.getItem("token");
 
@@ -444,11 +544,11 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
         isActive: v.isActive !== false,
       }));
 
-      const cleanedIngredients = ingredients.map(({ id, ...i }) => ({
-        ...i,
-        percentage: i.percentage !== "" && i.percentage !== undefined ? Number(i.percentage) : undefined,
-        isKeyActive: !!i.isKeyActive,
-      }));
+     const cleanedIngredients = ingredients.map(
+  ({ id, preview, image, ...i }) => ({
+    ...i,
+  })
+);
 
       const formData = new FormData();
 
@@ -473,6 +573,16 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
       formData.append("highlights",       JSON.stringify(form.highlights));
       formData.append("skincareDetails",  JSON.stringify(form.skincareDetails));
       formData.append("ingredients",      JSON.stringify(cleanedIngredients));
+     ingredients.forEach((ing, index) => {
+  if (ing.image) {
+    formData.append(`ingredientImage_${index}`, ing.image);
+
+    formData.append(
+      `ingredientImageAlt_${index}`,
+      ing.name || ""
+    );
+  }
+});
       formData.append("packaging",        JSON.stringify(form.packaging));
       formData.append("variants",         JSON.stringify(cleanedVariants));
 
@@ -537,6 +647,8 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
         if (res.message) { toast.error(res.message); return; }
       }
       toast.error(error.message || "Something went wrong");
+    }finally{
+      setLoading(false)
     }
   };
 
@@ -881,20 +993,47 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
       </SectionCard>
 
       {/* ── Ingredients ── */}
-      <SectionCard icon={Leaf} title="Ingredients (INCI List)" color="rose" defaultOpen={false}>
-        <AnimatePresence>
-          {ingredients.map((ing) => (
-            <IngredientRow key={ing.id} ing={ing}
-              onChange={(updated) => setIngredients(ingredients.map((i) => i.id === ing.id ? updated : i))}
-              onRemove={() => setIngredients(ingredients.filter((i) => i.id !== ing.id))} />
-          ))}
-        </AnimatePresence>
-        {ingredients.length === 0 && <p className="text-sm text-gray-400 text-center py-4">No ingredients added yet.</p>}
-        <button type="button" onClick={() => setIngredients([...ingredients, emptyIngredient()])}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-rose-200 text-rose-500 hover:bg-rose-50 text-sm font-medium transition w-full justify-center">
-          <Plus className="w-4 h-4" /> Add Ingredient
-        </button>
-      </SectionCard>
+    <SectionCard
+  icon={Leaf}
+  title="Ingredients"
+  color="rose"
+  defaultOpen={false}
+>
+  <AnimatePresence>
+    {ingredients.map((ing, index) => (
+      <IngredientRow
+        key={ing.id}
+        ing={ing}
+        index={index}
+        onChange={(updated) =>
+          setIngredients((prev) =>
+            prev.map((item) =>
+              item.id === ing.id ? updated : item
+            )
+          )
+        }
+        onRemove={() =>
+          setIngredients((prev) =>
+            prev.filter((item) => item.id !== ing.id)
+          )
+        }
+      />
+    ))}
+  </AnimatePresence>
+
+  <button
+    type="button"
+    onClick={() =>
+      setIngredients((prev) => [
+        ...prev,
+        emptyIngredient(),
+      ])
+    }
+    className="w-12 h-12 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center shadow-lg transition"
+  >
+    <Plus className="w-5 h-5" />
+  </button>
+</SectionCard>
 
       {/* ── Packaging ── */}
       <SectionCard icon={Box} title="Packaging, Shipping & Tax" color="slate" defaultOpen={false}>
@@ -932,18 +1071,36 @@ py-4 rounded-b-2xl">
           className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition">
           Cancel
         </button>
-        <button type="submit"
-          className={cn(
-            "flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl text-sm font-semibold text-white shadow-sm transition",
-            submitted ? "bg-emerald-500" : "bg-emerald-600 hover:bg-emerald-700"
-          )}>
-          {submitted ? <><Check className="w-4 h-4" /> Saved!</> : <><Package className="w-4 h-4" /> Add Product</>}
-        </button>
+         <button
+                  type="submit"
+                  disabled={loading}
+                  className={cn(
+                    "flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl text-sm font-semibold text-white shadow-sm transition",
+                    submitted
+                      ? "bg-emerald-500"
+                      : "bg-emerald-600 hover:bg-emerald-700",
+                    loading && "opacity-70 cursor-not-allowed",
+                  )}
+                >
+                  {loading ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />{" "}
+                      Adding...
+                    </>
+                  ) : submitted ? (
+                    <>
+                      <Check className="w-4 h-4" /> Saved!
+                    </>
+                  ) : (
+                    <>
+                      <Package className="w-4 h-4" /> Add Product
+                    </>
+                  )}
+                </button>
       </div>
     </form>
   );
 }
-
 // ─── Modal Wrapper ────────────────────────────────────────────────────────────
 export default function ProductModal({ open, onClose,fetchProducts, fetchCategories }) {
   if (!open) return null;

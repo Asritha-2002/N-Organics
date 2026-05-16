@@ -422,7 +422,7 @@ const AnnouncementModal = ({ bar, onClose, onSave }) => {
               ) : (
                 <Plus className="w-4 h-4" />
               )}
-              {submitting ? "Saving…" : "Create Bar"}
+              {submitting ? "Saving…" : "Save Bar"}
             </button>
           </div>
         </div>

@@ -13,6 +13,8 @@ export const CartProvider = ({ children }) => {
     const res = await fetch(`${BASE_URL}/cart/count`, {
       headers: { Authorization: `Bearer ${token}` },
     });
+    console.log(res);
+    
 
     const json = await res.json();
     if (json.success) {

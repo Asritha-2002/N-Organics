@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { User, Edit3, X, Loader2, CheckCircle, Camera } from "lucide-react";
 import axios from "axios";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+import toast from "react-hot-toast"
 const Profile = () => {
   const fileInputRef = useRef(null); // Reference for the hidden file input
   const [isEditing, setIsEditing] = useState(false);
@@ -65,7 +66,7 @@ const Profile = () => {
       setSuccessMessage("Profile photo updated successfully!");
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
-      alert("Failed to upload image: " + error.message);
+      toast.error("Failed to upload image: " + error.message);
     } finally {
       setUpdating(false);
     }
@@ -78,11 +79,11 @@ const Profile = () => {
       await axios.patch(`${BASE_URL}/profile`, userData, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setSuccessMessage("Profile updated successfully!");
+      toast.success("Profile updated successfully!");
       setIsEditing(false);
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
-      alert("Update failed");
+      toast.error("Update failed");
     } finally {
       setUpdating(false);
     }

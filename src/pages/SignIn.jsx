@@ -4,12 +4,14 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { validateForm } from "../utils/validation"; // ✅ centralized validation
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useCart } from "../pages/CartContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { fetchCartCount } = useCart();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -67,6 +69,7 @@ const SignIn = () => {
 
     const isAdmin = res.data.user?.isAdmin;
     localStorage.setItem("isAdmin", isAdmin ? "true" : "false");
+    await fetchCartCount();
 
     if (isAdmin) {
       navigate("/admin");

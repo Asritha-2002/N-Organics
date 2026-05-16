@@ -177,7 +177,7 @@ const ProductCard = ({ product: p, onView, onEdit, onDeleteClick }) => {
             <div className="text-right">
               <p className="text-xs text-gray-400">Stock</p>
               <p className={cn("text-sm font-bold", totalStock <= 10 ? "text-rose-500" : "text-gray-700")}>
-                {totalStock} units
+                {totalStock} in stock
               </p>
             </div>
           </div>
@@ -205,6 +205,22 @@ const ProductCard = ({ product: p, onView, onEdit, onDeleteClick }) => {
 const ViewDrawer = ({ product: p, onClose, onEdit, onDeleteClick }) => {
   const [activeImage, setActiveImage] = useState(0);
   const [activeTab,   setActiveTab]   = useState("overview");
+  const [variantImageIndexes, setVariantImageIndexes] = useState({});
+  const handleVariantPrev = (variantIndex, totalImages) => {
+  setVariantImageIndexes((prev) => ({
+    ...prev,
+    [variantIndex]:
+      ((prev[variantIndex] || 0) - 1 + totalImages) % totalImages,
+  }));
+};
+
+const handleVariantNext = (variantIndex, totalImages) => {
+  setVariantImageIndexes((prev) => ({
+    ...prev,
+    [variantIndex]:
+      ((prev[variantIndex] || 0) + 1) % totalImages,
+  }));
+};
 
   if (!p) return null;
 
@@ -321,6 +337,7 @@ const ViewDrawer = ({ product: p, onClose, onEdit, onDeleteClick }) => {
               <div>
                 <SectionTitle icon={Package} label="Basic Info" color="emerald" />
                 <div className="grid grid-cols-2 gap-3">
+                  
                   <KV label="Name"         value={p.name} />
                   <KV label="Brand"        value={p.brand} />
                   <KV label="Category"     value={p.category} />
@@ -390,25 +407,119 @@ const ViewDrawer = ({ product: p, onClose, onEdit, onDeleteClick }) => {
                                    : <Pill className="bg-gray-100 text-gray-500 border-gray-200">Inactive</Pill>}
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-white rounded-xl p-3">
-                      <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mb-1">Pricing</p>
-                      <p className="text-xs text-gray-400 line-through">MRP ₹{v.price?.mrp}</p>
-                      <p className="text-base font-bold text-emerald-600">₹{v.price?.sellingPrice}</p>
-                      {v.price?.mrp && v.price?.sellingPrice && (
-                        <p className="text-[11px] text-rose-500 font-semibold mt-0.5">
-                          {Math.round((1 - v.price.sellingPrice / v.price.mrp) * 100)}% off
-                        </p>
-                      )}
-                    </div>
-                    <div className="bg-white rounded-xl p-3">
-                      <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mb-1">Stock</p>
-                      <p className={cn("text-base font-bold", v.stock?.quantity <= v.stock?.lowStockAlert ? "text-rose-500" : "text-gray-800")}>
-                        {v.stock?.quantity} units
-                      </p>
-                      <p className="text-[11px] text-gray-400">Alert at {v.stock?.lowStockAlert}</p>
-                    </div>
-                  </div>
+                  <div className="space-y-3">
+
+  {/* Variant Images Carousel */}
+  {v.images?.length > 0 && (
+    <div className="relative rounded-2xl overflow-hidden bg-white border border-gray-100">
+      
+      {/* Main Image */}
+      <div className="h-64 bg-gray-50">
+        <img
+          src={v.images[variantImageIndexes[i] || 0]?.url}
+          alt={v.sku}
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      {/* Navigation Buttons */}
+      {v.images.length > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={() => handleVariantPrev(i, v.images.length)}
+            className="absolute left-3 top-1/2 -translate-y-1/2 bg-white shadow-md hover:scale-105 transition p-2 rounded-full"
+          >
+            ←
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleVariantNext(i, v.images.length)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 bg-white shadow-md hover:scale-105 transition p-2 rounded-full"
+          >
+            →
+          </button>
+        </>
+      )}
+
+      {/* Thumbnails */}
+      {v.images.length > 1 && (
+        <div className="flex gap-2 p-3 overflow-x-auto bg-white border-t border-gray-100">
+          {v.images.map((img, imgIndex) => (
+            <button
+              key={imgIndex}
+              onClick={() =>
+                setVariantImageIndexes((prev) => ({
+                  ...prev,
+                  [i]: imgIndex,
+                }))
+              }
+              className={`w-16 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition ${
+                (variantImageIndexes[i] || 0) === imgIndex
+                  ? "border-emerald-500"
+                  : "border-gray-200"
+              }`}
+            >
+              <img
+                src={img.url}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )}
+
+  {/* Pricing + Stock */}
+  <div className="grid grid-cols-2 gap-3">
+    
+    <div className="bg-white rounded-2xl p-4 border border-gray-100">
+      <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mb-1">
+        Pricing
+      </p>
+
+      <p className="text-xs text-gray-400 line-through">
+        MRP ₹{v.price?.mrp}
+      </p>
+
+      <p className="text-xl font-bold text-emerald-600">
+        ₹{v.price?.sellingPrice}
+      </p>
+
+      {v.price?.mrp && v.price?.sellingPrice && (
+        <p className="text-xs text-rose-500 font-semibold mt-1">
+          {Math.round(
+            (1 - v.price.sellingPrice / v.price.mrp) * 100
+          )}% OFF
+        </p>
+      )}
+    </div>
+
+    <div className="bg-white rounded-2xl p-4 border border-gray-100">
+      <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mb-1">
+        Stock
+      </p>
+
+      <p
+        className={cn(
+          "text-xl font-bold",
+          v.stock?.quantity <= v.stock?.lowStockAlert
+            ? "text-rose-500"
+            : "text-gray-800"
+        )}
+      >
+        {v.stock?.quantity}
+      </p>
+
+      <p className="text-xs text-gray-400 mt-1">
+        Alert at {v.stock?.lowStockAlert}
+      </p>
+    </div>
+  </div>
+</div>
                   <div className="grid grid-cols-2 gap-2">
                     {/* {console.log(v.attributes)} */}
                     
@@ -499,26 +610,59 @@ const ViewDrawer = ({ product: p, onClose, onEdit, onDeleteClick }) => {
             </div>
           )}
 
-          {activeTab === "ingredients" && (
-            <div className="space-y-3">
-              <SectionTitle icon={FlaskConical} label="INCI Ingredients" color="rose" />
-              {p.ingredients?.length > 0 ? (
-                p.ingredients.map((ing, i) => (
-                  <div key={i} className="p-3 rounded-2xl border border-gray-100 bg-gray-50 grid grid-cols-2 gap-2">
-                    <div className="col-span-2 flex items-center justify-between">
-                      <span className="text-sm font-bold text-gray-800">{ing.name}</span>
-                      {ing.isKeyActive && <Pill className="bg-emerald-100 text-emerald-700 border-emerald-200">Key Active</Pill>}
-                    </div>
-                    {ing.inci       && <KV label="INCI"    value={ing.inci} />}
-                    {ing.benefit    && <KV label="Benefit" value={ing.benefit} />}
-                    {ing.percentage !== undefined && <KV label="%" value={`${ing.percentage}%`} />}
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-gray-400 text-center py-6">No ingredients listed.</p>
-              )}
+         {activeTab === "ingredients" && (
+  <div className="space-y-4">
+    <SectionTitle
+      icon={FlaskConical}
+      label="Ingredients"
+      color="rose"
+    />
+
+    {p.ingredients?.length > 0 ? (
+      p.ingredients.map((ing, i) => (
+        <div
+          key={i}
+          className="rounded-2xl border border-gray-100 bg-gray-50 overflow-hidden"
+        >
+
+          {/* Image */}
+          {ing.image?.url && (
+            <div className="h-52 bg-white">
+              <img
+                src={ing.image.url}
+                alt={ing.image.altText || ing.name}
+                className="w-full h-full object-cover"
+              />
             </div>
           )}
+
+          {/* Content */}
+          <div className="p-4 space-y-3">
+
+            {/* Name */}
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-gray-800">
+                {ing.name}
+              </h3>
+            </div>
+
+            {/* Description */}
+            {ing.description && (
+              <p className="text-sm text-gray-600 leading-relaxed">
+                {ing.description}
+              </p>
+            )}
+
+          </div>
+        </div>
+      ))
+    ) : (
+      <div className="text-center py-10 text-sm text-gray-400">
+        No ingredients available.
+      </div>
+    )}
+  </div>
+)}
 
           {activeTab === "packaging" && (
             <div className="space-y-5">
@@ -589,6 +733,7 @@ export default function ProductsGrid({ products, loadingProducts, onEdit, onProd
 
   const [editProduct, setEditProduct] = useState(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  
 
   const handleDeleteClick = (product) => {
     setViewProduct(null);  

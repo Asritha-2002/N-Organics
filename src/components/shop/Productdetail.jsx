@@ -102,7 +102,7 @@ const Accordion = ({
             transition={{ duration: 0.28 }}
             className="overflow-hidden"
           >
-            <div className="px-5 sm:px-6 pb-5 ml-[52px] sm:ml-[64px]">
+            <div className="px-5 sm:px-6 pb-5">
               {children}
             </div>
           </motion.div>
@@ -181,6 +181,7 @@ export default function ProductDetail() {
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [cartLoading, setCartLoading] = useState(false);
   const [showAddedModal, setShowAddedModal] = useState(false);
+  const [showAllIngredients, setShowAllIngredients] = useState(false);
   const navigate = useNavigate();
 
   const { fetchCartCount } = useCart();
@@ -920,7 +921,7 @@ export default function ProductDetail() {
               >
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                    Selected Variant
+                    Selected Product
                   </p>
                   <span className="text-[10px] font-bold text-[#457358] bg-[#457358]/10 px-2 py-0.5 rounded-full">
                     {selectedVariant.sku}
@@ -955,7 +956,7 @@ export default function ProductDetail() {
             {product.variants?.length > 1 && (
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
-                  Select Variant
+                  Select Quantity
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {product.variants.map((v) => {
@@ -1004,7 +1005,7 @@ export default function ProductDetail() {
                   </>
                 )}
                 <span className="text-xs text-gray-400 ml-auto">
-                  (Incl. of taxes)
+                  (Incl. of all taxes)
                 </span>
               </motion.div>
             )}
@@ -1059,17 +1060,15 @@ export default function ProductDetail() {
 
                 {stockQty > 10 ? (
                   <>
-                    <span className="font-bold">{stockQty}</span> products
-                    available
+                    <span className="font-bold">{stockQty}</span> in stock
                   </>
                 ) : stockQty > 5 ? (
                   <>
-                    Only <span className="font-bold">{stockQty}</span> few left!
+                    Only <span className="font-bold">{stockQty}</span> left!
                   </>
                 ) : stockQty > 0 ? (
                   <>
-                    Only <span className="font-bold">{stockQty}</span>{" "}
-                    {stockQty === 1 ? "product" : "products"} left!
+                    Only <span className="font-bold">{stockQty}</span>{" "} left!
                   </>
                 ) : (
                   "Out of Stock"
@@ -1351,45 +1350,118 @@ export default function ProductDetail() {
             )}
 
             {product.ingredients?.length > 0 && (
-              <Accordion icon={FlaskConical} title="Ingredients (INCI)">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {product.ingredients.map((ing, i) => (
-                    <div
-                      key={i}
-                      className="flex items-start gap-3 bg-white rounded-xl p-3 border border-[#e7dfd4]"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center flex-shrink-0">
-                        <FlaskConical className="h-3.5 w-3.5 text-rose-500" />
+            <Accordion icon={FlaskConical} title="Ingredients">
+  {product.ingredients?.length > 0 ? (
+    <>
+      {/* INGREDIENTS WITH IMAGE */}
+      {product.ingredients.filter((ing) => ing.image?.url).length > 0 && (
+        <div className="mb-6">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-[#143c2f]">
+              Featured Ingredients
+            </h3>
+            <span className="text-xs text-[#6f7f77]">Swipe to explore</span>
+          </div>
+
+          <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scroll-smooth scrollbar-hide">
+            {product.ingredients
+              .filter((ing) => ing.image?.url)
+              .map((ing, i) => (
+                <div
+                  key={i}
+                  className="snap-start shrink-0 w-[240px] sm:w-[260px] md:w-[280px] rounded-2xl overflow-hidden border border-[#e7dfd4] bg-white shadow-sm"
+                >
+                  <div className="aspect-[4/3] w-full bg-[#f8f6f2]">
+                    <img
+                      src={ing.image.url}
+                      alt={ing.image.altText || ing.name}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+
+                  <div className="p-4">
+                    <h3 className="text-base font-bold text-[#143c2f] line-clamp-1">
+                      {ing.name}
+                    </h3>
+
+                    {ing.description ? (
+                      <p className="mt-2 min-h-[72px] text-sm leading-6 text-[#457358] line-clamp-3">
+                        {ing.description}
+                      </p>
+                    ) : (
+                      <p className="mt-2 min-h-[72px] text-sm italic text-gray-400">
+                        No description available.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+
+      {/* INGREDIENTS WITHOUT IMAGE */}
+      {product.ingredients.filter((ing) => !ing.image?.url).length > 0 && (
+        <div className="rounded-2xl border border-[#e7dfd4] bg-[#fcfaf7] p-4 sm:p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-[#143c2f]">
+              More Ingredients
+            </h3>
+
+            {/* Always show the button so users can toggle visibility */}
+            <button
+              type="button"
+              onClick={() => setShowAllIngredients(!showAllIngredients)}
+              className="rounded-full border border-[#d8cec1] bg-white px-4 py-2 text-xs font-semibold text-[#143c2f] transition hover:bg-[#f3eee8]"
+            >
+              {showAllIngredients ? "See Less" : "See More"}
+            </button>
+          </div>
+
+          {/* This grid will now only mount/render if showAllIngredients is true */}
+          {showAllIngredients && (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {product.ingredients
+                .filter((ing) => !ing.image?.url)
+                .map((ing, i) => (
+                  <div
+                    key={i}
+                    className="rounded-2xl border border-[#eee5da] bg-white p-4"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f8f1ea]">
+                        <FlaskConical className="h-5 w-5 text-[#c78b6d]" />
                       </div>
+
                       <div>
-                        <p className="text-sm font-semibold text-[#143c2f] flex items-center gap-1.5">
+                        <h4 className="text-sm font-semibold text-[#143c2f]">
                           {ing.name}
-                          {ing.isKeyActive && (
-                            <span className="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-bold">
-                              Key
-                            </span>
-                          )}
-                        </p>
-                        {ing.inci && (
-                          <p className="text-[10px] text-gray-400 mt-0.5 italic">
-                            {ing.inci}
+                        </h4>
+
+                        {ing.description ? (
+                          <p className="mt-1 text-sm leading-6 text-[#5f746b] line-clamp-3">
+                            {ing.description}
                           </p>
-                        )}
-                        {ing.benefit && (
-                          <p className="text-xs text-[#457358] mt-0.5">
-                            {ing.benefit}
-                          </p>
-                        )}
-                        {ing.percentage > 0 && (
-                          <p className="text-[10px] text-gray-400">
-                            {ing.percentage}%
+                        ) : (
+                          <p className="mt-1 text-sm italic text-gray-400">
+                            No description available.
                           </p>
                         )}
                       </div>
                     </div>
-                  ))}
-                </div>
-              </Accordion>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  ) : (
+    <div className="py-10 text-center text-sm text-gray-400">
+      No ingredients available.
+    </div>
+  )}
+</Accordion>
             )}
 
             {sd.claims?.length > 0 && (
