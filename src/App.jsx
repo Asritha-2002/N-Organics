@@ -32,7 +32,7 @@ import Voucher from './components/admin/Voucher';
 import Cart from './pages/Cart';
 import AddressManagement from './components/user/AddressManagement';
 import BuyNow from './pages/BuyNow';
-
+import SearchResults from './components/SearchResults';
 function App() {
   const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -95,6 +95,7 @@ function App() {
           } />
            <Route path="/cart" element={<Cart/>} />
            <Route path="/checkout" element={<BuyNow/>} />
+           <Route path="/search" element={<SearchResults />} />
 
 
           <Route

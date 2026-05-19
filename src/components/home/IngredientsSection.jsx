@@ -4,10 +4,13 @@ import {
   Droplets,
   Sun,
   Shield,
+  
+} from "lucide-react";
+import {
+  PackageCheck,
+  BadgeCheck,
+  ShieldCheck,
   Sparkles,
-  Truck,
-  RotateCcw,
-  Award,
 } from "lucide-react";
 import video from "../../assets/home/video.mp4";
 
@@ -51,28 +54,27 @@ const ingredients = [
 const highlights = [
   {
     id: 1,
-    icon: Truck,
+    icon: PackageCheck,
     title: "Free Shipping",
-    subtitle: "On orders above $50",
+    subtitle: "On orders above ₹999",
   },
   {
     id: 2,
-    icon: RotateCcw,
-    title: "30-Day Returns",
-    subtitle: "Hassle-free returns",
-    active: true,
+    icon: BadgeCheck,
+    title: "Easy Returns",
+    subtitle: "Simple 30-day return policy",
   },
   {
     id: 3,
-    icon: Shield,
+    icon: ShieldCheck,
     title: "Dermatologist Tested",
-    subtitle: "Safe for all skin types",
+    subtitle: "Gentle and safe for daily use",
   },
   {
     id: 4,
-    icon: Award,
-    title: "Award Winning",
-    subtitle: "Voted #1 organic brand",
+    icon: Sparkles,
+    title: "Pure Botanical Care",
+    subtitle: "Crafted with consciously chosen ingredients",
   },
 ];
 
@@ -191,35 +193,38 @@ export default function IngredientsSection() {
       </div>
 
       {/* Highlights Strip */}
-      <div className="mt-16 border-t border-[#e5dfd3]/60 py-12 sm:py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 gap-8 text-center sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
-            {highlights.map((item, index) => {
-              const Icon = item.icon;
+      <div className="mt-16 border-t border-[#e3ddd2] py-14 sm:py-16">
+  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {highlights.map((item, index) => {
+        const Icon = item.icon;
 
-              return (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="flex flex-col items-center"
-                >
-                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#e8b130]/15 text-[#e8b130]">
-                    <Icon className="h-7 w-7" strokeWidth={1.8} />
-                  </div>
+        return (
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.45, delay: index * 0.08 }}
+            className="group rounded-2xl border border-[#ddd8cf] bg-[#faf8f3] px-6 py-7 text-center shadow-[0_6px_24px_rgba(28,64,47,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(28,64,47,0.08)]"
+          >
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#d8dfd6] bg-[#e7eee8] text-[#2f5b46] transition-colors duration-300 group-hover:bg-[#457358] group-hover:text-white">
+              <Icon className="h-6 w-6" strokeWidth={1.9} />
+            </div>
 
-                  <h3 className="text-lg sm:text-xl font-semibold text-[#1c402f]">
-                    {item.title}
-                  </h3>
-                  <p className="mt-1 text-xs sm:text-sm text-[#5f6f63]">{item.subtitle}</p>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+            <h3 className="text-[17px] font-semibold tracking-tight text-[#1c402f] sm:text-lg">
+              {item.title}
+            </h3>
+
+            <p className="mt-2 text-sm leading-relaxed text-[#6b746d]">
+              {item.subtitle}
+            </p>
+          </motion.div>
+        );
+      })}
+    </div>
+  </div>
+</div>
     </section>
   );
 }

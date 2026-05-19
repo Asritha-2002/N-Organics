@@ -156,7 +156,7 @@ export default function FeaturedProducts() {
           <button
             type="button"
             onClick={() => navigate("/shop")}
-            className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-[#1c402f] transition hover:text-[#457358] sm:text-base cursor-pointer ml-auto md:ml-0 self-end md:self-auto"
+            className="bg-[#d2e16a] px-4 py-1 rounded inline-flex w-fit items-center gap-2 text-sm text-[#1c402f] transition hover:text-[#FFFFFF] hover:bg-[#457358] sm:text-base cursor-pointer ml-auto md:ml-0 self-end md:self-auto"
           >
             View All
             <ArrowRight size={16} />

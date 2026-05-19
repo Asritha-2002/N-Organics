@@ -13,6 +13,7 @@ const initialForm = {
   discount: '',
   discountType: 'percentage',
   appliesTo: 'all',
+  productId: "",
   categoryIds: [],
   startDate: '',
   endDate: '',
@@ -102,7 +103,6 @@ export default function BannerModal({ isOpen, onClose, onSave, bannerData }) {
   const [categories, setCategories] = useState([]);
 const [loadingCategories, setLoadingCategories] = useState(false);
 
-
 useEffect(() => {
   const fetchCategories = async () => {
     try {
@@ -134,6 +134,8 @@ useEffect(() => {
     fetchCategories();
   }
 }, [isOpen]);
+
+
 
 const handleCategoryChange = (category) => {
   setForm((prev) => {
@@ -191,6 +193,12 @@ const handleCategoryChange = (category) => {
     if (!form.endDate) e.endDate = 'End date is required';
     if (form.startDate && form.endDate && form.endDate <= form.startDate)
       e.endDate = 'End date must be after start date';
+    if (
+  form.appliesTo === "product" &&
+  !form.productId
+) {
+  e.productId = "Please select a product";
+}
     if (
   form.appliesTo === "category" &&
   form.categoryIds.length === 0
@@ -429,22 +437,73 @@ const handleCategoryChange = (category) => {
             <div className="space-y-4">
               <FormField label="Applies To" required>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {['all', 'category'].map((opt) => (
+                  {['all','product','category'].map((opt) => (
                     <button
                       type="button"
                       key={opt}
-                      onClick={() => set('appliesTo', opt)}
+                      onClick={() => {
+  set("appliesTo", opt);
+
+  if (opt === "product") {
+    set("categoryIds", []);
+  }
+
+  if (opt === "category") {
+    set("productId", "");
+  }
+
+  if (opt === "all") {
+    set("productId", "");
+    set("categoryIds", []);
+  }
+}}
                       className={`py-2 px-3 rounded-xl text-sm font-medium border transition capitalize ${
                         form.appliesTo === opt
                           ? 'bg-[#00bc7d] text-white border-[#00bc7d] shadow-sm'
                           : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-green-300'
                       }`}
                     >
-                      {opt === 'all' ? 'All Products' : 'By Category'}
+                      {
+  opt === "all"
+    ? "All Products"
+    : opt === "product"
+    ? "Single Product"
+    : "By Category"
+}
                     </button>
                   ))}
                 </div>
               </FormField>
+
+            <AnimatePresence>
+  {form.appliesTo === "product" && (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      exit={{ opacity: 0, height: 0 }}
+      className="overflow-hidden"
+    >
+      <FormField
+        label="Product ID"
+        required
+        hint="Enter MongoDB Product Object ID"
+      >
+        <Input
+          type="text"
+          placeholder="Enter Product ID"
+          value={form.productId}
+          onChange={(e) => set("productId", e.target.value)}
+        />
+
+        {errors.productId && (
+          <p className="text-xs text-red-500">
+            {errors.productId}
+          </p>
+        )}
+      </FormField>
+    </motion.div>
+  )}
+</AnimatePresence>
 
               <AnimatePresence>
                 {form.appliesTo === 'category' && (

@@ -228,12 +228,18 @@ const CartItemCard = ({ item, onRemove, onQuantityChange, updating, activeBanner
                 <span className="w-8 text-center text-sm font-bold text-[#143c2f]">
                   {updating ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : item.quantity}
                 </span>
-                <button
-                  onClick={() => onQuantityChange(item, item._id, item.quantity + 1)}
-                 
-                  className="w-8 h-8 flex items-center justify-center text-[#457358] hover:bg-[#457358]/8 disabled:opacity-30 transition">
-                  <Plus className="w-3 h-3" />
-                </button>
+                {console.log(item)}
+               <button
+  onClick={() => onQuantityChange(item, item._id, item.quantity + 1)}
+  disabled={
+    updating ||
+    item.quantity >= item.stockQty
+
+  }
+  className="w-8 h-8 flex items-center justify-center text-[#457358] hover:bg-[#457358]/8 disabled:opacity-30 disabled:cursor-not-allowed transition"
+>
+  <Plus className="w-3 h-3" />
+</button>
               </div>
             )}
           </div>

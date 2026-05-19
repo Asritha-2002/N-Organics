@@ -45,8 +45,8 @@ const StaticFallback = () => {
   const navigate=useNavigate()
  return (
    <>
-    <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/70 to-transparent z-[1]" />
-    <div className="absolute inset-0 bg-gradient-to-t from-white/40 via-transparent to-white/20 z-[1]" />
+    <div className="absolute inset-0 bg-gradient-to-r from-white/70 via-white/40 to-transparent z-[1]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-white/40 via-transparent to-white/20 z-[1]" />
 
     <motion.div
       animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }}
@@ -142,10 +142,11 @@ const buildShopUrl = (banner) => {
     return categories ? `/shop?categories=${encodeURIComponent(categories)}` : "/shop";
   }
 
-  if (banner.appliesTo === "product" || banner.appliesTo === "products") {
-    const products = (banner.productIds || []).join(",");
-    return products ? `/shop?products=${encodeURIComponent(products)}` : "/shop";
-  }
+  if (banner.appliesTo === "product") {
+  return banner.productId
+    ? `/product/${banner.productId}`
+    : "/shop";
+}
 
   return "/shop";
 }; 
@@ -163,22 +164,18 @@ const HeroSection = () => {
 };
 
   useEffect(() => {
-    const fetchBanners = async () => {
-      try {
-        const res = await fetch(`${BASE_URL}/admin/banners`);
-        const data = await res.json();
-        const now = new Date();
-        const live = data
-          .filter((b) => b.isActive && !b.deletedAt && now <= new Date(b.endDate))
-          .sort((a, b) => a.priority - b.priority);
+   const fetchBanners = async () => {
+  try {
+    const res = await fetch(`${BASE_URL}/banners`);
+    const data = await res.json();
 
-        setBanners(live);
-      } catch (err) {
-        console.error("Failed to fetch banners:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    setBanners(data.data || []);
+  } catch (err) {
+    console.error("Failed to fetch banners:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
     fetchBanners();
   }, []);

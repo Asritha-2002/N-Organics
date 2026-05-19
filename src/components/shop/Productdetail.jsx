@@ -6,6 +6,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useCart } from "../../pages/CartContext";
 import { useNavigate } from "react-router-dom";
+import LoginRequiredModal from "./modal/LoginRequiredModal"
 import {
   Heart,
   ChevronLeft,
@@ -118,7 +119,7 @@ const StarRating = ({ average = 0, count = 0 }) => (
       {[1, 2, 3, 4, 5].map((s) => (
         <Heart
           key={s}
-          className={`h-4 w-4 ${s <= Math.round(average) ? "fill-amber-400 text-amber-400" : "text-gray-300 fill-gray-100"}`}
+          className={`h-4 w-4 ${s <= Math.round(average) ? "fill-[#d2e16a] text-[#d2e16a]" : "text-gray-300 fill-gray-100"}`}
         />
       ))}
     </div>
@@ -166,6 +167,7 @@ const VideoModal = ({ video, onClose }) => (
 );
 
 import AddToCartModal from "./AddToCartModal"; // adjust path as needed
+import ProductReviews from "./ProductReviews";
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function ProductDetail() {
   const { id } = useParams();
@@ -183,6 +185,7 @@ export default function ProductDetail() {
   const [showAddedModal, setShowAddedModal] = useState(false);
   const [showAllIngredients, setShowAllIngredients] = useState(false);
   const navigate = useNavigate();
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const { fetchCartCount } = useCart();
 
@@ -297,15 +300,15 @@ export default function ProductDetail() {
       .join(" · ") || v.sku;
 
   // ── Free From — normalise and check if truly non-empty ────────────────────
-  const freeFromList = sd.madeWithoutList
-    ? (Array.isArray(sd.madeWithoutList)
-        ? sd.madeWithoutList
-        : sd.madeWithoutList.split(",")
-      )
-        .map((m) => m.trim())
-        .filter(Boolean)
-    : [];
-
+const freeFromList = sd.madeWithoutList
+  ? (Array.isArray(sd.madeWithoutList)
+      ? sd.madeWithoutList
+      : [sd.madeWithoutList]
+    )
+      .flatMap((item) => item.split(","))
+      .map((m) => m.trim())
+      .filter(Boolean)
+  : [];
   if (loading) {
     return (
       <section className="min-h-screen bg-[#faf8f5] pt-28 sm:pt-32 lg:pt-36 pb-16">
@@ -354,9 +357,9 @@ export default function ProductDetail() {
       const token = localStorage.getItem("token");
 
       if (!token) {
-        toast.error("Please login to add favorites");
-        return;
-      }
+  setShowLoginModal(true);
+  return;
+}
 
       if (!product?._id) {
         toast.error("Product not found");
@@ -421,9 +424,9 @@ export default function ProductDetail() {
 
       const token = localStorage.getItem("token");
       if (!token) {
-        toast.error("Please login to add items to cart");
-        return;
-      }
+  setShowLoginModal(true);
+  return;
+}
 
       const variantIndex = product?.variants?.findIndex(
         (variant) => variant?.sku === selectedVariant?.sku,
@@ -498,9 +501,9 @@ export default function ProductDetail() {
       const token = localStorage.getItem("token");
 
       if (!token) {
-        toast.error("Please login to continue");
-        return;
-      }
+  setShowLoginModal(true);
+  return;
+}
 
       const variantIndex = product?.variants?.findIndex(
         (variant) => variant?.sku === selectedVariant?.sku,
@@ -900,12 +903,12 @@ export default function ProductDetail() {
               <ul className="space-y-1.5">
                 {product.highlights.filter(Boolean).map((h, i) => (
                   <li
-                    key={i}
-                    className="flex items-start gap-2 text-sm text-[#284a39]"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#457358] mt-2 shrink-0" />
-                    {h}
-                  </li>
+  key={i}
+  className="flex items-start gap-2 text-sm text-[#284a39] bg-[#457358]/8 border border-[#457358]/15 px-3 py-2 rounded-xl font-medium"
+>
+  <span className="w-1.5 h-1.5 rounded-full bg-[#457358] mt-2 shrink-0" />
+  <span>{h}</span>
+</li>
                 ))}
               </ul>
             )}
@@ -1503,7 +1506,7 @@ export default function ProductDetail() {
                   {freeFromList.map((m, i) => (
                     <span
                       key={i}
-                      className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-green-50 text-green-700 border border-green-200 capitalize"
+                      className="px-3 py-1.5 rounded-xl  font-semibold bg-green-50 text-green-700 border border-green-200 capitalize"
                     >
                       {m}
                     </span>
@@ -1579,6 +1582,15 @@ export default function ProductDetail() {
         quantity={quantity}
         bestOffer={bestOffer}
       />
+      <ProductReviews productId={product?._id || product?.id} />
+      <LoginRequiredModal
+  isOpen={showLoginModal}
+  onClose={() => setShowLoginModal(false)}
+  title="Login Required"
+  message="Please sign in to add items to your cart."
+  redirectPath="/sign-in"
+/>
+      
     </section>
   );
 }

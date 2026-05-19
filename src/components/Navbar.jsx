@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingBag, Search, Menu, X, Heart, User } from "lucide-react";
+import { ShoppingBag, Search, Menu, X, User } from "lucide-react";
 import logo from "../assets/home/logo.png";
 import logo2 from "../assets/home/logo2.png";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { useCart } from "../pages/CartContext";
+import SearchBar from "./SearchBar"; // ← adjust path if needed
 
 const links = [
   { name: "Home", href: "/" },
@@ -13,16 +15,15 @@ const links = [
   { name: "Reviews", href: "/reviews" },
   { name: "Contact", href: "/contact" },
 ];
-const BASE_URL = import.meta.env.VITE_BASE_URL;
-import {useCart} from "../pages/CartContext"
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [desktopSearchOpen, setDesktopSearchOpen] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
-    const { cartCount, setCartCount } = useCart();
+  const { cartCount } = useCart();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -32,31 +33,33 @@ export default function Navbar() {
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
+    return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
+  // Close desktop search when navigating
+  useEffect(() => {
+    setDesktopSearchOpen(false);
+  }, [location.pathname]);
 
-
-  // ✅ Handle scroll after navigation
   useEffect(() => {
     if (location.pathname === "/ingredients") {
       setTimeout(() => {
-        document
-          .getElementById("ingredients")
-          ?.scrollIntoView({ behavior: "smooth" });
+        document.getElementById("ingredients")?.scrollIntoView({ behavior: "smooth" });
       }, 100);
     }
-
     if (location.pathname === "/reviews") {
       setTimeout(() => {
-        document
-          .getElementById("testimonials")
-          ?.scrollIntoView({ behavior: "smooth" });
+        document.getElementById("testimonials")?.scrollIntoView({ behavior: "smooth" });
       }, 100);
     }
   }, [location]);
+
+  const handleUserClick = () => {
+    const isAdmin = localStorage.getItem("isAdmin");
+    if (isAdmin === "true") navigate("/admin");
+    else if (isAdmin === "false") navigate("/account");
+    else navigate("/sign-in");
+  };
 
   return (
     <motion.nav
@@ -69,138 +72,146 @@ export default function Navbar() {
           : "bg-transparent"
       }`}
     >
-      <div className="mx-auto max-w-7xl">
-        <div className="flex h-16 items-center justify-between sm:h-18 lg:h-20">
-          {/* LOGO */}
-          <div className="flex min-w-0 items-center">
-            <img
-              src={scrolled ? logo2 : logo}
-              alt="logo"
-              className="h-40 w-[200px] cursor-pointer object-contain sm:h-24 md:h-28 lg:h-32 xl:h-40 transition-all duration-300"
-              onClick={() => navigate("/")}
-            />
-          </div>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
 
-          {/* DESKTOP MENU */}
-          <div className="hidden items-center gap-6 lg:flex xl:gap-10">
-            {links.map((link) => (
-              <NavLink key={link.name} to={link.href}>
-                {() => {
-                  const isShopActive =
-                    location.pathname.startsWith("/shop") ||
-                    location.pathname.startsWith("/product");
+        {/* ── DESKTOP ROW ── */}
+        <div className="hidden lg:flex h-20 items-center justify-between">
 
-                  const isActive =
-                    location.pathname === link.href ||
-                    (link.name === "Shop" && isShopActive);
+          {/* Logo */}
+          <img
+            src={scrolled ? logo2 : logo}
+            alt="logo"
+            className="h-32 xl:h-40 w-[200px] cursor-pointer object-contain transition-all duration-300 shrink-0"
+            onClick={() => navigate("/")}
+          />
 
-                  return (
-                    <div
-                      className={`group relative text-sm uppercase tracking-[0.22em] transition xl:text-sm font-bold xl:tracking-widest ${
+          {/* Nav links */}
+          <div className="flex items-center gap-6 xl:gap-10">
+            {links.map((link) => {
+              const isShopActive =
+                location.pathname.startsWith("/shop") ||
+                location.pathname.startsWith("/product");
+              const isActive =
+                location.pathname === link.href ||
+                (link.name === "Shop" && isShopActive);
+
+              return (
+                <NavLink key={link.name} to={link.href}>
+                  <div
+                    className={`group relative text-sm uppercase tracking-[0.22em] font-bold xl:tracking-widest transition ${
+                      isActive
+                        ? scrolled ? "text-[#d2e16a]" : "text-[#457358]"
+                        : scrolled ? "text-[#cbd1c7] hover:text-[#d2e16a]" : "text-gray-800 hover:text-[#457358]"
+                    }`}
+                  >
+                    {link.name}
+                    <span
+                      className={`absolute left-0 -bottom-2 h-[2px] w-0 transition-all duration-300 group-hover:w-full ${
                         isActive
-                          ? scrolled
-                            ? "text-[#d2e16a] hover:text-[#d2e16a]"
-                            : "text-[#457358] hover:text-[#457358]"
-                          : scrolled
-                            ? "text-[#cbd1c7] hover:text-[#d2e16a]"
-                            : "text-gray-800 hover:text-[#457358]"
+                          ? scrolled ? "bg-[#d2e16a]" : "bg-[#457358]"
+                          : scrolled ? "bg-[#d2e16a]" : "bg-[#457358]"
                       }`}
-                    >
-                      {link.name}
-
-                      <span
-                        className={`absolute left-0 -bottom-2 h-[2px] w-0 transition-all duration-300 group-hover:w-full ${
-                          isActive
-                            ? scrolled
-                              ? "bg-[#d2e16a] group-hover:bg-[#d2e16a]"
-                              : "bg-[#457358] group-hover:bg-[#457358]"
-                            : scrolled
-                              ? "bg-[#cbd1c7] group-hover:bg-[#d2e16a]"
-                              : "bg-gray-800 group-hover:bg-[#457358]"
-                        }`}
-                      />
-                    </div>
-                  );
-                }}
-              </NavLink>
-            ))}
+                    />
+                  </div>
+                </NavLink>
+              );
+            })}
           </div>
 
-          {/* DESKTOP ICONS */}
-          <div className="hidden items-center gap-4 lg:flex xl:gap-5 mr-6">
-            <Search
-              className={`h-6 w-6 cursor-pointer transition ${
-                scrolled
-                  ? "text-[#cbd1c7] hover:text-[#c8fec0]"
-                  : "text-gray-800 hover:text-[#457358]"
-              }`}
-            />
+          {/* Icons */}
+          <div className="flex items-center gap-4 xl:gap-5 mr-2 shrink-0">
+
+            {/* ── DESKTOP SEARCH ── */}
+            <AnimatePresence mode="wait">
+              {desktopSearchOpen ? (
+                <motion.div
+                  key="search-open"
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: 220 }}
+                  exit={{ opacity: 0, width: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="overflow-visible"
+                >
+                  <SearchBar
+                    scrolled={scrolled}
+                    onClose={() => setDesktopSearchOpen(false)}
+                  />
+                </motion.div>
+              ) : (
+                <motion.button
+                  key="search-icon"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setDesktopSearchOpen(true)}
+                  className={`transition ${
+                    scrolled
+                      ? "text-[#cbd1c7] hover:text-[#c8fec0]"
+                      : "text-gray-800 hover:text-[#457358]"
+                  }`}
+                >
+                  <Search className="h-6 w-6" />
+                </motion.button>
+              )}
+            </AnimatePresence>
 
             <User
               className={`h-6 w-6 cursor-pointer transition ${
-                scrolled
-                  ? "text-[#cbd1c7] hover:text-[#c8fec0]"
-                  : "text-gray-800 hover:text-[#457358]"
+                scrolled ? "text-[#cbd1c7] hover:text-[#c8fec0]" : "text-gray-800 hover:text-[#457358]"
               }`}
-             onClick={() => {
-  const isAdmin = localStorage.getItem("isAdmin");
-  console.log(isAdmin);
-
-  if (isAdmin === "true") {
-    navigate("/admin");
-  } else if (isAdmin === "false") {
-    navigate("/account");
-  } else {
-    // This catches null or undefined values when the user is not signed in
-    navigate("/sign-in");
-  }
-}}
+              onClick={handleUserClick}
             />
 
-            <div className="relative cursor-pointer">
+            <div className="relative cursor-pointer" onClick={() => navigate("/cart")}>
               <ShoppingBag
                 className={`h-6 w-6 transition ${
-                  scrolled
-                    ? "text-[#cbd1c7] hover:text-[#c8fec0]"
-                    : "text-gray-800 hover:text-[#457358]"
+                  scrolled ? "text-[#cbd1c7] hover:text-[#c8fec0]" : "text-gray-800 hover:text-[#457358]"
                 }`}
-                onClick={()=>navigate('/cart')}
               />
-
-              {/* Badge */}
               <span
                 className={`absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full text-[10px] transition ${
-                  scrolled
-                    ? "bg-[#d2e16a] text-gray-900" // Colors when scrolled
-                    : "bg-[#457358] text-white" // Colors when not scrolled (default)
+                  scrolled ? "bg-[#d2e16a] text-gray-900" : "bg-[#457358] text-white"
                 }`}
               >
                 {cartCount || 0}
               </span>
             </div>
           </div>
+        </div>
 
-          {/* MOBILE BUTTON */}
+        {/* ── MOBILE ROW ── */}
+        <div className="flex lg:hidden h-16 sm:h-18 items-center gap-3">
+
+          {/* Logo */}
+          <img
+            src={scrolled ? logo2 : logo}
+            alt="logo"
+            className="h-24 w-[130px] shrink-0 cursor-pointer object-contain transition-all duration-300"
+            onClick={() => navigate("/")}
+          />
+
+          {/* ── MOBILE SEARCH BAR (center, always visible) ── */}
+          <div className="flex-1 min-w-0">
+            <SearchBar scrolled={scrolled} isMobile />
+          </div>
+
+          {/* Hamburger */}
           <button
             type="button"
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
             onClick={() => setMobileOpen(!mobileOpen)}
-            className={`flex h-10 w-10 items-center justify-center rounded-full transition lg:hidden ${
+            className={`shrink-0 flex h-10 w-10 items-center justify-center rounded-full transition ${
               scrolled
                 ? "text-white hover:bg-white/10"
                 : "text-[#1c402f] hover:bg-[#1c402f]/10"
             }`}
           >
-            {mobileOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>
 
-      {/* MOBILE MENU */}
+      {/* ── MOBILE MENU ── */}
       <AnimatePresence>
         {mobileOpen && (
           <>
@@ -234,41 +245,27 @@ export default function Navbar() {
                 </div>
 
                 <div className="flex items-center gap-6 border-t border-white/10 pt-4">
+                  <User
+                    className="h-5 w-5 cursor-pointer text-white transition hover:text-[#e8b130]"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      handleUserClick();
+                    }}
+                  />
 
-  {/* USER */}
-  <User
-    className="h-5 w-5 cursor-pointer text-white transition hover:text-[#e8b130]"
-    onClick={() => {
-      setMobileOpen(false);
-
-      const isAdmin = localStorage.getItem("isAdmin");
-
-      if (isAdmin === "true") {
-        navigate("/admin");
-      } else if (isAdmin === "false") {
-        navigate("/account");
-      } else {
-        navigate("/sign-in");
-      }
-    }}
-  />
-
-  {/* CART */}
-  <div
-    className="relative cursor-pointer"
-    onClick={() => {
-      setMobileOpen(false);
-      navigate("/cart");
-    }}
-  >
-    <ShoppingBag className="h-5 w-5 text-white transition hover:text-[#e8b130]" />
-
-    {/* Dynamic Cart Count */}
-    <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#e8b130] text-[10px] text-black">
-      {cartCount || 0}
-    </span>
-  </div>
-</div>
+                  <div
+                    className="relative cursor-pointer"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      navigate("/cart");
+                    }}
+                  >
+                    <ShoppingBag className="h-5 w-5 text-white transition hover:text-[#e8b130]" />
+                    <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#e8b130] text-[10px] text-black">
+                      {cartCount || 0}
+                    </span>
+                  </div>
+                </div>
               </div>
             </motion.div>
           </>
