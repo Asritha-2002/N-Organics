@@ -881,7 +881,7 @@ const handleAddToCart = async () => {
                         <p
                           className={`text-[9px] font-bold ${isSelected ? "text-[#457358]" : "text-gray-500"}`}
                         >
-                          ₹{v.price?.sellingPrice}
+                          ${v.price?.sellingPrice}
                         </p>
                         {v.stock?.quantity === 0 && (
                           <span className="absolute top-1 right-1 text-[8px] bg-gray-200 text-gray-500 px-1 py-0.5 rounded font-bold">
@@ -1066,12 +1066,12 @@ const handleAddToCart = async () => {
                 className="flex items-baseline gap-3"
               >
                 <span className="text-3xl font-bold text-[#457358]">
-                  ₹{currentPrice}
+                  ${currentPrice}
                 </span>
                 {currentMRP > currentPrice && (
                   <>
                     <span className="text-lg text-gray-400 line-through">
-                      ₹{currentMRP}
+                      ${currentMRP}
                     </span>
                     <span className="text-sm font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg">
                       {discount}% OFF
@@ -1102,7 +1102,7 @@ const handleAddToCart = async () => {
                   Best Offer:{" "}
                   {bestOffer.discountType === "percentage"
                     ? `${bestOffer.discount}% off`
-                    : `Flat ₹${bestOffer.discount} off`}
+                    : `Flat $${bestOffer.discount} off`}
                 </span>
               </div>
             )}
@@ -1352,7 +1352,7 @@ const handleAddToCart = async () => {
                         <span className="shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
                           {offer.discountType === "percentage"
                             ? `${offer.discount}% OFF`
-                            : `₹${offer.discount} OFF`}
+                            : `$${offer.discount} OFF`}
                         </span>
                       </div>
 
