@@ -56,6 +56,7 @@ export default function Navbar() {
 
   const handleUserClick = () => {
     const isAdmin = localStorage.getItem("isAdmin");
+    console.log(isAdmin)
     if (isAdmin === "true") navigate("/admin");
     else if (isAdmin === "false") navigate("/account");
     else navigate("/sign-in");

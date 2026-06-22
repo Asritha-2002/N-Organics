@@ -116,6 +116,7 @@ function App() {
               </ProtectedRoute>
             }
           >
+            <Route index element={<AdminDashboard />} /> 
                   <Route path="banners" element={<Banners />} />
                   <Route path="orders" element={<OrdersManagement/>} />
                   <Route path="announcementbar" element={<AnnouncementBar />} />
