@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import imageCompression from "browser-image-compression";
 import toast from "react-hot-toast";
 import {
   Package,
@@ -93,6 +94,20 @@ const WEIGHT_UNITS = ["ml", "g", "l", "kg", "oz", "fl_oz"];
 const TAX_RATES = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28];
 
 const cn = (...c) => c.filter(Boolean).join(" ");
+const compressImage = async (file) => {
+  const options = {
+    maxSizeMB: 0.5,
+    maxWidthOrHeight: 1200,
+    useWebWorker: true,
+    fileType: "image/webp",
+  };
+  try {
+    return await imageCompression(file, options);
+  } catch (err) {
+    console.warn("Compression failed, using original:", err);
+    return file;
+  }
+};
 
 // ─── Shared UI ────────────────────────────────────────────────────────────────
 const SectionCard = ({
@@ -1146,11 +1161,12 @@ function EditProductForm({
     : null,
 }));
 const fd = new FormData();
-ingredients.forEach((ing, index) => {
+for (const [index, ing] of ingredients.entries()) {
   if (ing.image && !ing.image.existing && ing.image.file) {
-    fd.append(`ingredientImage_${index}`, ing.image.file);
+    const compressed = await compressImage(ing.image.file);
+    fd.append(`ingredientImage_${index}`, compressed, ing.image.file.name);
   }
-});
+}
 
       
       fd.append("name", form.name || "");
@@ -1179,10 +1195,14 @@ ingredients.forEach((ing, index) => {
         .map((img) => img.public_id);
       fd.append("existingImages", JSON.stringify(existingPids));
 
-      // New product images
-      images.forEach((img) => {
-        if (!img.existing && img.file) fd.append("images", img.file);
-      });
+   
+      // New product images — compressed
+for (const img of images) {
+  if (!img.existing && img.file) {
+    const compressed = await compressImage(img.file);
+    fd.append("images", compressed, img.file.name);
+  }
+}
 
       // Existing videos public_ids to keep
       const existingVideoPids = videos
@@ -1199,33 +1219,32 @@ ingredients.forEach((ing, index) => {
       });
 
       // Category image
-      if (categoryImage && !categoryImage.existing && categoryImage.file) {
-        fd.append("categoryImage", categoryImage.file);
-        fd.append("categoryImageAlt", categoryImage.altText || "");
-      }
+     if (categoryImage && !categoryImage.existing && categoryImage.file) {
+  const compressed = await compressImage(categoryImage.file);
+  fd.append("categoryImage", compressed, categoryImage.file.name);
+  fd.append("categoryImageAlt", categoryImage.altText || "");
+}
 
       // Variant images — new uploads only, matched by variant index
-      variantImageGroups.forEach((group, variantIndex) => {
-        // Tell backend which existing variant images to keep
-        const existingVariantPids = group
-          .filter((img) => img.existing && img.public_id)
-          .map((img) => img.public_id);
-        fd.append(
-          `existingVariantImages_${variantIndex}`,
-          JSON.stringify(existingVariantPids),
-        );
-
-        // Upload new variant images with named field
-        group.forEach((img) => {
-          if (!img.existing && img.file) {
-            fd.append(`variantImage_${variantIndex}`, img.file); // ← named field with index
-            fd.append(
-              `variantImageAlt_${variantIndex}_${img.file.name}`,
-              img.altText || "",
-            );
-          }
-        });
-      });
+      for (const [variantIndex, group] of variantImageGroups.entries()) {
+  const existingVariantPids = group
+    .filter((img) => img.existing && img.public_id)
+    .map((img) => img.public_id);
+  fd.append(
+    `existingVariantImages_${variantIndex}`,
+    JSON.stringify(existingVariantPids),
+  );
+  for (const img of group) {
+    if (!img.existing && img.file) {
+      const compressed = await compressImage(img.file);
+      fd.append(`variantImage_${variantIndex}`, compressed, img.file.name);
+      fd.append(
+        `variantImageAlt_${variantIndex}_${img.file.name}`,
+        img.altText || "",
+      );
+    }
+  }
+}
 
       let response;
 try {

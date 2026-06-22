@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast"
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+import imageCompression from "browser-image-compression";
 import {
   Package, ChevronDown, ChevronUp, Plus, Trash2,
   X, Image as ImageIcon, Video, Tag, Leaf, Box,
@@ -58,6 +59,20 @@ const emptyIngredient = () => ({
 });
 
 const cn = (...classes) => classes.filter(Boolean).join(" ");
+const compressImage = async (file) => {
+  const options = {
+    maxSizeMB: 0.5,          // compress each image to max 0.5MB
+    maxWidthOrHeight: 1200,   // resize if larger than 1200px
+    useWebWorker: true,
+    fileType: "image/webp",   // convert to webp for extra savings
+  };
+  try {
+    return await imageCompression(file, options);
+  } catch (err) {
+    console.warn("Compression failed, using original:", err);
+    return file; // fallback to original if compression fails
+  }
+};
 
 // ─── Shared UI Components ─────────────────────────────────────────────────────
 const SectionCard = ({ icon: Icon, title, color = "emerald", children, defaultOpen = true }) => {
@@ -573,29 +588,31 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
       formData.append("highlights",       JSON.stringify(form.highlights));
       formData.append("skincareDetails",  JSON.stringify(form.skincareDetails));
       formData.append("ingredients",      JSON.stringify(cleanedIngredients));
-     ingredients.forEach((ing, index) => {
+     for (const [index, ing] of ingredients.entries()) {
   if (ing.image) {
-    formData.append(`ingredientImage_${index}`, ing.image);
-
-    formData.append(
-      `ingredientImageAlt_${index}`,
-      ing.name || ""
-    );
+    const compressed = await compressImage(ing.image);
+    formData.append(`ingredientImage_${index}`, compressed, ing.image.name);
+    formData.append(`ingredientImageAlt_${index}`, ing.name || "");
   }
-});
+}
       formData.append("packaging",        JSON.stringify(form.packaging));
       formData.append("variants",         JSON.stringify(cleanedVariants));
 
-      // Product images
-      images.forEach((img) => {
-        if (img.file) formData.append("images", img.file);
-      });
+ 
+      // Product images — compressed
+for (const img of images) {
+  if (img.file) {
+    const compressed = await compressImage(img.file);
+    formData.append("images", compressed, img.file.name);
+  }
+}
 
       // ── NEW: Category image ──
       if (categoryImage?.file) {
-        formData.append("categoryImage", categoryImage.file);
-        formData.append("categoryImageAlt", categoryImage.altText || "");
-      }
+  const compressed = await compressImage(categoryImage.file);
+  formData.append("categoryImage", compressed, categoryImage.file.name);
+  formData.append("categoryImageAlt", categoryImage.altText || "");
+}
 
       // ── NEW: Tag image ──
       if (tagImage?.file && form.tag) {
@@ -605,14 +622,15 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
       }
 
       // Variant images
-      variantImageGroups?.forEach((group, variantIndex) => {
-  group.images?.forEach((img) => {
+    for (const [variantIndex, group] of variantImageGroups.entries()) {
+  for (const img of group.images || []) {
     if (img.file) {
-      formData.append(`variantImage_${variantIndex}`, img.file);  // ← key has index
+      const compressed = await compressImage(img.file);
+      formData.append(`variantImage_${variantIndex}`, compressed, img.file.name);
       formData.append(`variantImageAlt_${variantIndex}_${img.file.name}`, img.altText || "");
     }
-  });
-});
+  }
+}
 
       // Videos
       videos.forEach((vid) => {
