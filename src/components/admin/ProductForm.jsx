@@ -627,7 +627,10 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
-
+      if (response.status === 413) {
+  alert('Upload too large. Please reduce image sizes or upload fewer images at once. Maximum total size is 4MB.');
+  return;
+}
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || "Failed to create product");
 
