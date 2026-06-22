@@ -622,17 +622,27 @@ export function AddProductForm({ onClose, fetchProducts, fetchCategories }) {
         }
       });
 
-      const response = await fetch(`${BASE_URL}/admin/products`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
-      if (response.status === 413) {
-  alert('Upload too large. Please reduce image sizes or upload fewer images at once. Maximum total size is 4MB.');
+     let response;
+try {
+  response = await fetch(`${BASE_URL}/admin/products`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+} catch (networkError) {
+  toast.error("Upload too large. Please reduce image sizes or upload fewer images at once. Keep total under 4MB.");
+  setLoading(false);
   return;
 }
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.message || "Failed to create product");
+
+if (response.status === 413) {
+  toast.error("Upload too large. Please reduce image sizes or upload fewer images at once. Keep total under 4MB.");
+  setLoading(false);
+  return;
+}
+
+const result = await response.json();
+if (!response.ok) throw new Error(result.message || "Failed to create product");
 
       toast.success("Product created successfully");
       fetchProducts()

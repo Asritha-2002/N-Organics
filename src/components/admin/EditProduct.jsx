@@ -1227,21 +1227,36 @@ ingredients.forEach((ing, index) => {
         });
       });
 
-      const response = await fetch(
-        `${BASE_URL}/admin/products/${product._id}`,
-        {
-          method: "PUT",
-          headers: { Authorization: `Bearer ${token}` },
-          body: fd,
-        },
-      );
-      if (response.status === 413) {
-  alert('Upload too large. Please reduce image sizes or upload fewer images at once. Maximum total size is 4MB.');
+      let response;
+try {
+  response = await fetch(
+    `${BASE_URL}/admin/products/${product._id}`,
+    {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+      body: fd,
+    },
+  );
+} catch (networkError) {
+  // Vercel kills 413 requests at network level — fetch throws instead of returning a response
+  toast.error(
+    "Upload too large. Please reduce image sizes or upload fewer images at once. Keep total under 4MB.",
+  );
+  setLoading(false);
   return;
 }
-      const result = await response.json();
-      if (!response.ok)
-        throw new Error(result.message || "Failed to update product");
+
+if (response.status === 413) {
+  toast.error(
+    "Upload too large. Please reduce image sizes or upload fewer images at once. Keep total under 4MB.",
+  );
+  setLoading(false);
+  return;
+}
+
+const result = await response.json();
+if (!response.ok)
+  throw new Error(result.message || "Failed to update product");
 
       toast.success(result.message || "Product updated successfully ✅");
       setSubmitted(true);
