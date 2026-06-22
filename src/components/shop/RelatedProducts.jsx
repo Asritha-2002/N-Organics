@@ -107,7 +107,7 @@ export default function RelatedProducts({ relatedProducts }) {
       >
         {product.bestOffer.discountType === "percentage"
           ? `${product.bestOffer.discount}% Off`
-          : `Flat ₹${product.bestOffer.discount} Off`}
+          : `Flat $${product.bestOffer.discount} Off`}
       </span>
     )}
 
@@ -147,11 +147,11 @@ export default function RelatedProducts({ relatedProducts }) {
                   </h4>
                   <div className="flex items-center gap-2 mt-1">
                     <p className="font-semibold text-[#457358]">
-                      ₹{product.sellingPrice}
+                      ${product.sellingPrice}
                     </p>
                     {product.mrp > product.sellingPrice && (
                       <p className="text-sm text-gray-400 line-through">
-                        ₹{product.mrp}
+                        ${product.mrp}
                       </p>
                     )}
                   </div>

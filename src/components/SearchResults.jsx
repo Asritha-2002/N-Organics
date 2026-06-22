@@ -344,9 +344,9 @@ function ProductCard({ product, navigate, onAddToCart, cartLoadingId }) {
         )}
         <div className="w-full flex flex-row justify-between mt-4">
           <div className="flex items-center gap-2 mt-1">
-            <p className="font-semibold text-[#457358]">₹{product.sellingPrice}</p>
+            <p className="font-semibold text-[#457358]">${product.sellingPrice}</p>
             {product.mrp > product.sellingPrice && (
-              <p className="text-sm text-gray-400 line-through">₹{product.mrp}</p>
+              <p className="text-sm text-gray-400 line-through">${product.mrp}</p>
             )}
           </div>
           <button

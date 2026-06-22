@@ -192,10 +192,10 @@ const inputBg = isMobile
               {item.sellingPrice > 0 && (
                 <div className="shrink-0 text-right">
                   <p className="text-sm font-semibold text-[#d2e16a]">
-                    ₹{item.sellingPrice}
+                  ${item.sellingPrice}
                   </p>
                   {item.mrp > item.sellingPrice && (
-                    <p className="text-xs text-white/40 line-through">₹{item.mrp}</p>
+                    <p className="text-xs text-white/40 line-through">${item.mrp}</p>
                   )}
                 </div>
               )}

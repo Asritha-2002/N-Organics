@@ -23,7 +23,7 @@ export default function ProductStatsCard({ stats }) {
         },
         {
           label: "Inventory Value",
-          value: "₹" + stats.inventoryValue.toLocaleString(),
+          value: "$" + stats.inventoryValue.toLocaleString(),
           suffix: "",
         },
         {

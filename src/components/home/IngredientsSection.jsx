@@ -56,7 +56,7 @@ const highlights = [
     id: 1,
     icon: PackageCheck,
     title: "Free Shipping",
-    subtitle: "On orders above ₹999",
+    subtitle: "On orders above $999",
   },
   {
     id: 2,

@@ -170,7 +170,7 @@ export default function Wishlist() {
                         >
                           {product.bestOffer.discountType === "percentage"
                             ? `${product.bestOffer.discount}% Off`
-                            : `Flat ₹${product.bestOffer.discount} Off`}
+                            : `Flat $${product.bestOffer.discount} Off`}
                         </span>
                       )}
 
@@ -209,12 +209,12 @@ export default function Wishlist() {
 
                       <div className="mt-2 flex items-center gap-2">
                         <p className="font-semibold text-[#457358]">
-                          ₹{product.sellingPrice}
+                          ${product.sellingPrice}
                         </p>
 
                         {product.mrp > product.sellingPrice && (
                           <p className="text-sm text-gray-400 line-through">
-                            ₹{product.mrp}
+                            ${product.mrp}
                           </p>
                         )}
                       </div>
