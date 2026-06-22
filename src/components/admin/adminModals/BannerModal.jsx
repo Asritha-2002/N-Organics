@@ -190,9 +190,13 @@ const handleCategoryChange = (category) => {
     if (form.discountType === 'percentage' && Number(form.discount) > 100)
       e.discount = 'Percentage cannot exceed 100';
     if (!form.startDate) e.startDate = 'Start date is required';
-    if (!form.endDate) e.endDate = 'End date is required';
-    if (form.startDate && form.endDate && form.endDate <= form.startDate)
-      e.endDate = 'End date must be after start date';
+    // if (!form.endDate) e.endDate = 'End date is required';
+    if (
+  form.endDate &&
+  new Date(form.endDate) <= new Date(form.startDate)
+) {
+  e.endDate = 'End date must be after start date';
+}
     if (
   form.appliesTo === "product" &&
   !form.productId
@@ -403,17 +407,18 @@ const handleCategoryChange = (category) => {
               <FormField label="Discount Type" required>
                 <Select required value={form.discountType} onChange={(e) => set('discountType', e.target.value)}>
                   <option value="percentage">Percentage (%)</option>
-                  <option value="flat">Flat Amount (₹)</option>
+                  <option value="flat">Flat Amount ($)</option>
                 </Select>
               </FormField>
 
               <FormField label="Discount Value" required>
                 <div className="relative">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    {form.discountType === 'percentage' ? <Percent className="w-4 h-4" /> : <span className="w-4 h-4">₹</span>}
+                    {form.discountType === 'percentage' ? <Percent className="w-4 h-4" /> : <span className="w-4 h-4">$</span>}
                   </div>
                   <Input
                     type="number"
+                    step="any"
                     min="0"
                     max={form.discountType === 'percentage' ? 100 : undefined}
                     placeholder={form.discountType === 'percentage' ? '20' : '200'}
@@ -568,13 +573,13 @@ const handleCategoryChange = (category) => {
                   />
                   {errors.startDate && <p className="text-xs text-red-500">{errors.startDate}</p>}
                 </FormField>
-                <FormField label="End Date" required>
+                <FormField label="End Date">
                   <Input
                     type="datetime-local"
                     value={form.endDate}
                     min={form.startDate}
                     onChange={(e) => set('endDate', e.target.value)}
-                    required
+                    
                   />
                   {errors.endDate && <p className="text-xs text-red-500">{errors.endDate}</p>}
                 </FormField>

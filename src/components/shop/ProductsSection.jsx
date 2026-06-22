@@ -234,61 +234,102 @@ export default function ProductsSection() {
 const token = localStorage.getItem("token");
 const [showLoginModal, setShowLoginModal] = useState(false);
 const handleAddToCart = async (e, product) => {
-  e.stopPropagation(); // prevent navigating to product detail
-  if (!token) {
-  setShowLoginModal(true);
-  return;
-}
+  e.stopPropagation(); // Prevent navigating to product detail
 
-
+  // Check product stock availability first
   if (!product.quantity || product.quantity === 0) {
     toast.error("This product is out of stock");
     return;
   }
 
   const loadingKey = `${product._id}-${product.variantIndex}`;
-  setCartLoadingId(loadingKey);
+  
+  // ==========================================
+  // CASE A: USER IS LOGGED IN (DATABASE MODE)
+  // ==========================================
+  if (token) {
+    setCartLoadingId(loadingKey);
 
-  try {
-    const response = await fetch(`${BASE_URL}/cart/items`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        productId:    product._id,
-        variantIndex: product.variantIndex ?? 0,
-        quantity:     1,
-      }),
-    });
+    try {
+      const response = await fetch(`${BASE_URL}/cart/items`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          productId:    product._id,
+          variantIndex: product.variantIndex ?? 0,
+          quantity:     1,
+        }),
+      });
 
-    const result = await response.json();
+      const result = await response.json();
 
-    if (!response.ok) {
-      // 409 = already in cart
-      if (response.status === 409) {
-        toast.error(result.message || "Already in cart");
-      } else {
-        throw new Error(result.message || "Failed to add to cart");
+      if (!response.ok) {
+        if (response.status === 409) {
+          toast.error(result.message || "Already in cart");
+        } else {
+          throw new Error(result.message || "Failed to add to cart");
+        }
+        return;
       }
+
+      toast.success(result.message || "Added to cart!");
+      fetchCartCount(); // Refresh context badge count from DB
+      
+    } catch (err) {
+      toast.error(err.message || "Something went wrong");
+    } finally {
+      setCartLoadingId(null);
+    }
+  } 
+  // ==========================================
+  // CASE B: GUEST USER (LOCAL STORAGE MODE)
+  // ==========================================
+  else {
+    setCartLoadingId(loadingKey);
+
+    // 1. Fetch current array or initialize a clean array if empty
+    let guestCart = JSON.parse(localStorage.getItem("guestCart")) || [];
+
+    // 2. See if this exact product and variant variant already exists in cache
+    const targetVariant = product.variantIndex ?? 0;
+    const existingItemIndex = guestCart.findIndex(
+      (item) => item.productId === product._id && item.variantIndex === targetVariant
+    );
+
+    if (existingItemIndex > -1) {
+      // 409 Emulation Check: If your senior wants a restriction, throw a warning. 
+      // Otherwise, simply increment quantity: guestCart[existingItemIndex].quantity += 1;
+      toast.error("Already in cart! Adjust quantities directly in your cart view.");
+      setCartLoadingId(null);
       return;
+    } else {
+      // 3. Construct a standard format item item object mirroring your DB response schema
+      guestCart.push({
+        productId: product._id,
+        variantIndex: targetVariant,
+        quantity: 1,
+        name: product.name,
+        sellingPrice: product.sellingPrice,
+        image: product.image,
+        mrp: product.mrp
+      });
     }
 
-    toast.success(result.message || "Added to cart!");
-    fetchCartCount()
-    
-    // If you have CartContext available here, call fetchCartCount
-    // fetchCartCount?.();
-  } catch (err) {
-    toast.error(err.message || "Something went wrong");
-  } finally {
+    // 4. Update browser cache storage
+    localStorage.setItem("guestCart", JSON.stringify(guestCart));
+    toast.success("Added to guest cart!");
+
+    // 5. Update your Global Cart Count Context Indicator
+    fetchCartCount(); 
     setCartLoadingId(null);
   }
 };
 
   return (
-    <section className="bg-[#f4efe9] py-12 sm:py-16 min-h-screen">
+    <section className=" py-12 sm:py-16 min-h-screen">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* TOP HEADER SECTION */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-5 mb-12 border-b border-gray-200/50 pb-6">
@@ -437,7 +478,7 @@ const handleAddToCart = async (e, product) => {
                             >
                               {product.bestOffer.discountType === "percentage"
                                 ? `${product.bestOffer.discount}% Off`
-                                : `Flat ₹${product.bestOffer.discount} Off`}
+                                : `Flat $${product.bestOffer.discount} Off`}
                             </span>
                           )}
 
@@ -498,13 +539,13 @@ const handleAddToCart = async (e, product) => {
                               e.stopPropagation();
                               handleViewDetails(product._id);
                             }}
-                            className="w-full bg-white text-[#143c2f] font-semibold text-xs uppercase tracking-widest py-3.5 rounded-full shadow-xl hover:bg-[#c8fec0] transition-all transform translate-y-3 group-hover:translate-y-0 duration-300 flex items-center justify-center gap-2 cursor-pointer"
+                            className="w-full bg-white text-[#143c2f] font-semibold text-xs uppercase tracking-widest py-3 rounded-full shadow-xl hover:bg-[#d2e16a] transition-all transform translate-y-3 group-hover:translate-y-0 duration-300 flex items-center justify-center gap-2 cursor-pointer"
                           >
                             <Eye className="h-4 w-4" />
                             View Details
                           </button>
                         ) : (
-                          <div className="w-full bg-red-500 text-white font-semibold text-xs uppercase tracking-widest py-3.5 rounded-full shadow-xl flex items-center justify-center">
+                          <div className="w-full bg-red-500 text-white font-semibold text-xs uppercase tracking-widest py-3 rounded-full shadow-xl flex items-center justify-center">
                             Out Of Stock
                           </div>
                         )}
@@ -522,12 +563,12 @@ const handleAddToCart = async (e, product) => {
                       <div className="w-full flex flex-row justify-between mt-4">
                         <div className="flex items-center gap-2 mt-1">
                           <p className="font-semibold text-[#457358]">
-                            ₹{product.sellingPrice}
+                            ${product.sellingPrice}
                           </p>
 
                           {product.mrp > product.sellingPrice && (
                             <p className="text-sm text-gray-400 line-through">
-                              ₹{product.mrp}
+                              ${product.mrp}
                             </p>
                           )}
                         </div>

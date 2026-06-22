@@ -7,7 +7,7 @@ const formatDiscount = (banner) => {
   if (!banner) return "";
   return banner.discountType === "percentage"
     ? `${banner.discount}% Off`
-    : `₹${banner.discount} Off`;
+    : `$${banner.discount} Off`;
 };
 const formatAppliesToText = (banner) => {
   if (!banner) return "";

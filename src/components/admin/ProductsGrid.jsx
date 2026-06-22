@@ -171,8 +171,8 @@ const ProductCard = ({ product: p, onView, onEdit, onDeleteClick }) => {
         {defaultVariant && (
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-400 line-through">₹{defaultVariant.price?.mrp}</p>
-              <p className="text-base font-bold text-emerald-600">₹{defaultVariant.price?.sellingPrice}</p>
+              <p className="text-xs text-gray-400 line-through">${defaultVariant.price?.mrp}</p>
+              <p className="text-base font-bold text-emerald-600">${defaultVariant.price?.sellingPrice}</p>
             </div>
             <div className="text-right">
               <p className="text-xs text-gray-400">Stock</p>
@@ -482,11 +482,11 @@ const handleVariantNext = (variantIndex, totalImages) => {
       </p>
 
       <p className="text-xs text-gray-400 line-through">
-        MRP ₹{v.price?.mrp}
+        MRP ${v.price?.mrp}
       </p>
 
       <p className="text-xl font-bold text-emerald-600">
-        ₹{v.price?.sellingPrice}
+        ${v.price?.sellingPrice}
       </p>
 
       {v.price?.mrp && v.price?.sellingPrice && (

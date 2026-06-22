@@ -195,7 +195,7 @@ export default function AllBanners() {
                     <div className="flex flex-col">
                       <span className="text-gray-400 mb-0.5">Discount</span>
                       <span className="font-semibold text-green-600 flex items-center gap-0.5">
-                        {b.discountType === 'percentage' ? `${b.discount}%` : `₹${b.discount}`}
+                        {b.discountType === 'percentage' ? `${b.discount}%` : `$${b.discount}`}
                       </span>
                     </div>
                     <div className="flex flex-col">
@@ -298,7 +298,7 @@ export default function AllBanners() {
                   <span className="text-green-600 font-semibold">
                     {selectedBanner.discountType === 'percentage' 
                       ? `${selectedBanner.discount}%` 
-                      : `₹${selectedBanner.discount}`}
+                      : `$${selectedBanner.discount}`}
                   </span>
                 </div>
                 <div className="flex justify-between border-b border-gray-50 pb-2">

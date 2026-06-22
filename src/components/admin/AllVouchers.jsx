@@ -104,7 +104,7 @@ export default function AllVouchers({
   const [toggleTarget,  setToggleTarget]  = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
 
- 
+ console.log(vouchers)
 
   const [showVoucherModal, setShowVoucherModal] = useState(false);
 const [editVoucher, setEditVoucher] = useState(null);
@@ -297,14 +297,41 @@ useEffect(() => {
                       <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{v.title}</p>
                     </td>
                     {/* Discount */}
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      <span className="font-bold text-gray-800 text-sm">
-                        {v.discountType === "percentage" ? `${v.discount}% OFF` : `₹${v.discount} OFF`}
-                      </span>
-                      {v.maxDiscountAmount && (
-                        <p className="text-[10px] text-gray-400 mt-0.5">Max ₹{v.maxDiscountAmount}</p>
-                      )}
-                    </td>
+                    <td className="px-5 py-4">
+  {v.discountType === "complimentary" ? (
+    <div>
+      <p className="text-green-600 text-sm">
+        Free gift
+      </p>
+
+      {v.complimentaryItems?.map((item) => (
+        <div key={item._id} className="mt-1">
+          <p className="text-xs font-medium text-gray-700">
+            {item.name}
+          </p>
+
+          <p className="text-[11px] text-gray-500">
+            Qty: {item.quantity}
+          </p>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <>
+      <span className="font-bold text-gray-800 text-sm">
+        {v.discountType === "percentage"
+          ? `${v.discount}% OFF`
+          : `$${v.discount} OFF`}
+      </span>
+
+      {v.maxDiscountAmount && (
+        <p className="text-[10px] text-gray-400 mt-0.5">
+          Max ${v.maxDiscountAmount}
+        </p>
+      )}
+    </>
+  )}
+</td>
                     {/* Eligibility */}
                     <td className="px-5 py-4 text-sm text-gray-600 capitalize whitespace-nowrap">
                       {v.eligibility?.replace("_"," ")}

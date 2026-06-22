@@ -16,7 +16,12 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const cn = (...c) => c.filter(Boolean).join(" ");
-const fmt = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
+const fmt = (n) =>
+  new Intl.NumberFormat("en-AU", {
+    style: "currency",
+    currency: "AUD",
+    maximumFractionDigits: 2,
+  }).format(Number(n || 0));
 
 // ─── Countdown Timer ──────────────────────────────────────────────────────────
 const Countdown = ({ endDate }) => {
@@ -58,11 +63,27 @@ const StockBadge = ({ status, reason }) => {
   );
 };
 
+
+// ─── Voucher display helpers (same as Cart) ───────────────────────────────────
+const getVoucherBadgeLabel = (v) => {
+  if (v.discountType === "complimentary") return "🎁 Free Gift";
+  if (v.discountType === "percentage") return `${v.discount}% off · Save ${fmt(v.potentialDiscount)}`;
+  if (v.discountType === "flat") return `Save ${fmt(v.potentialDiscount)}`;
+  return `Save ${fmt(v.potentialDiscount)}`;
+};
+
+const getVoucherAppliedLabel = (appliedVoucher) => {
+  if (!appliedVoucher) return "";
+  if (appliedVoucher.discountType === "complimentary")
+    return "🎁 Complimentary gift added to your order";
+  return `saving ${fmt(appliedVoucher.discountAmount)}`;
+};
+
 // ─── Voucher Section ──────────────────────────────────────────────────────────
 const VoucherSection = ({ vouchers, appliedVoucher, onApply, onRemove, loading }) => {
-  const [open, setOpen]           = useState(false);
+  const [open, setOpen]             = useState(false);
   const [manualCode, setManualCode] = useState("");
-  const [applying, setApplying]   = useState(false);
+  const [applying, setApplying]     = useState(false);
 
   const handleManualApply = async () => {
     if (!manualCode.trim()) return;
@@ -73,21 +94,70 @@ const VoucherSection = ({ vouchers, appliedVoucher, onApply, onRemove, loading }
   };
 
   if (appliedVoucher) {
+    const isComplimentary = appliedVoucher.discountType === "complimentary";
+    const gifts = appliedVoucher.complimentaryItems || [];
+
     return (
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-        className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center">
-              <Tag className="w-4 h-4 text-white" />
+        className={cn(
+          "border rounded-2xl p-4",
+          isComplimentary ? "bg-purple-50 border-purple-200" : "bg-emerald-50 border-emerald-200"
+        )}>
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start gap-2 flex-1 min-w-0">
+            <div className={cn(
+              "w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5",
+              isComplimentary ? "bg-purple-500" : "bg-emerald-500"
+            )}>
+              {isComplimentary ? <Gift className="w-4 h-4 text-white" /> : <Tag className="w-4 h-4 text-white" />}
             </div>
-            <div>
-              <p className="text-sm font-bold text-emerald-700 font-mono tracking-wider">{appliedVoucher.code}</p>
-              <p className="text-xs text-emerald-600">saving {fmt(appliedVoucher.discountAmount)}</p>
+            <div className="flex-1 min-w-0">
+              <p className={cn(
+                "text-sm font-bold font-mono tracking-wider",
+                isComplimentary ? "text-purple-700" : "text-emerald-700"
+              )}>
+                {appliedVoucher.code}
+              </p>
+              <p className={cn("text-xs mt-0.5", isComplimentary ? "text-purple-600" : "text-emerald-600")}>
+                {getVoucherAppliedLabel(appliedVoucher)}
+              </p>
+
+              {/* ── Gift items list ── */}
+              {isComplimentary && gifts.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  {gifts.map((gift) => (
+                    <div key={gift._id}
+                      className="flex items-center gap-2.5 p-2.5 bg-white border border-purple-200 rounded-xl">
+                      {gift.imageUrl ? (
+                        <img src={gift.imageUrl} alt={gift.name}
+                          className="w-10 h-10 rounded-lg object-cover border border-purple-100 flex-shrink-0" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0 text-lg">
+                          🎁
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p className="text-xs font-bold text-purple-800 truncate">{gift.name}</p>
+                          <span className="text-[10px] bg-purple-500 text-white px-1.5 py-0.5 rounded-full font-bold flex-shrink-0">
+                            ×{gift.quantity}
+                          </span>
+                        </div>
+                        {gift.description && (
+                          <p className="text-[11px] text-purple-500 mt-0.5 leading-snug">{gift.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           <button onClick={onRemove} disabled={loading}
-            className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-100 transition">
+            className={cn(
+              "p-1.5 rounded-lg transition flex-shrink-0",
+              isComplimentary ? "text-purple-600 hover:bg-purple-100" : "text-emerald-600 hover:bg-emerald-100"
+            )}>
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -119,10 +189,10 @@ const VoucherSection = ({ vouchers, appliedVoucher, onApply, onRemove, loading }
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
             <div className="px-4 pb-4 space-y-3 border-t border-[#e7dfd4]">
+
               {/* Manual input */}
               <div className="flex gap-2 pt-3">
-                <input
-                  value={manualCode}
+                <input value={manualCode}
                   onChange={(e) => setManualCode(e.target.value.toUpperCase())}
                   onKeyDown={(e) => e.key === "Enter" && handleManualApply()}
                   placeholder="Enter voucher code"
@@ -134,7 +204,7 @@ const VoucherSection = ({ vouchers, appliedVoucher, onApply, onRemove, loading }
                 </button>
               </div>
 
-              {/* Eligible */}
+              {/* Eligible vouchers */}
               {eligibleVouchers.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Available for you</p>
@@ -142,13 +212,38 @@ const VoucherSection = ({ vouchers, appliedVoucher, onApply, onRemove, loading }
                     <div key={v.voucherId}
                       className="flex items-center justify-between p-3 rounded-xl border border-emerald-200 bg-emerald-50/50">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
+                        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                           <span className="font-mono text-xs font-black text-emerald-700 tracking-widest">{v.code}</span>
-                          <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">
-                            Save {fmt(v.potentialDiscount)}
+                          <span className={cn(
+                            "text-[10px] px-1.5 py-0.5 rounded-full font-bold",
+                            v.discountType === "complimentary"
+                              ? "bg-purple-100 text-purple-700"
+                              : "bg-emerald-500 text-white"
+                          )}>
+                            {getVoucherBadgeLabel(v)}
                           </span>
                         </div>
                         <p className="text-xs text-gray-500 truncate">{v.title}</p>
+                        {v.description
+                          ? <p className="text-[10px] text-gray-400 truncate">{v.description}</p>
+                          : null}
+
+                        {/* Gift items preview */}
+                        {v.discountType === "complimentary" && v.complimentaryItems?.length > 0 && (
+                          <div className="mt-1.5 space-y-1">
+                            {v.complimentaryItems.map((gift) => (
+                              <div key={gift._id} className="flex items-center gap-1.5">
+                                <span className="text-[10px] text-purple-600 font-semibold">
+                                  🎁 {gift.quantity}× {gift.name}
+                                </span>
+                                {gift.description && (
+                                  <span className="text-[10px] text-gray-400 truncate">— {gift.description}</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
                         <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
                           <Clock className="w-2.5 h-2.5" /> Expires <Countdown endDate={v.endDate} />
                         </p>
@@ -162,7 +257,7 @@ const VoucherSection = ({ vouchers, appliedVoucher, onApply, onRemove, loading }
                 </div>
               )}
 
-              {/* Ineligible */}
+              {/* Ineligible vouchers */}
               {ineligibleVouchers.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Add more to unlock</p>
@@ -172,9 +267,15 @@ const VoucherSection = ({ vouchers, appliedVoucher, onApply, onRemove, loading }
                       <div className="flex-1 min-w-0">
                         <span className="font-mono text-xs font-black text-gray-500 tracking-widest">{v.code}</span>
                         <p className="text-xs text-gray-500 truncate mt-0.5">{v.title}</p>
-                        <p className="text-[10px] text-amber-600 font-semibold mt-0.5">
-                          Add {fmt(v.amountNeeded)} more to unlock
-                        </p>
+                        {v.appliesTo === "category" && v.applicableCategories?.length > 0 ? (
+                          <p className="text-[10px] text-amber-600 font-semibold mt-0.5">
+                            Add {fmt(v.amountNeeded)} more from <span className="font-bold">{v.applicableCategories.join(", ")}</span> to unlock
+                          </p>
+                        ) : (
+                          <p className="text-[10px] text-amber-600 font-semibold mt-0.5">
+                            Add {fmt(v.amountNeeded)} more to unlock
+                          </p>
+                        )}
                       </div>
                       <span className="text-[10px] bg-gray-200 text-gray-500 px-2 py-1 rounded-lg font-bold">Locked</span>
                     </div>
@@ -194,12 +295,20 @@ const VoucherSection = ({ vouchers, appliedVoucher, onApply, onRemove, loading }
 };
 
 // ─── Order Summary ────────────────────────────────────────────────────────────
-const OrderSummary = ({ pricing, onCheckout, loading }) => {
+const OrderSummary = ({ pricing, onCheckout, loading, appliedVoucher }) => {
   const rows = [
-    { label: "Subtotal",         value: pricing.subtotal,         show: true },
-    { label: "MRP Savings",      value: pricing.mrpSavings,       show: pricing.mrpSavings > 0,     color: "text-emerald-600", prefix: "-" },
-    { label: "Banner Discount",  value: pricing.bannerDiscount,   show: pricing.bannerDiscount > 0,  color: "text-emerald-600", prefix: "-" },
-    { label: "Voucher Discount", value: pricing.voucherDiscount,  show: pricing.voucherDiscount > 0, color: "text-emerald-600", prefix: "-" },
+    { label: "Subtotal",           value: pricing.subtotal,        show: true },
+    { label: "MRP Savings",        value: pricing.mrpSavings,      show: pricing.mrpSavings > 0,      color: "text-emerald-600", prefix: "-" },
+    { label: "Banner Discount",    value: pricing.bannerDiscount,  show: pricing.bannerDiscount > 0,  color: "text-emerald-600", prefix: "-" },
+    { label: "Voucher Discount",   value: pricing.voucherDiscount, show: pricing.voucherDiscount > 0, color: "text-emerald-600", prefix: "-" },
+    {
+      label: "Complimentary Gift",
+      value: 0,
+      show: pricing.voucherDiscount === 0 && !!appliedVoucher && appliedVoucher?.discountType === "complimentary",
+      color: "text-purple-600",
+      prefix: "",
+      customValue: "🎁 Added",
+    },
   ].filter((r) => r.show);
 
   return (
@@ -209,13 +318,15 @@ const OrderSummary = ({ pricing, onCheckout, loading }) => {
       </div>
       <div className="px-5 py-4 space-y-3">
         {rows.map((row) => (
-          <div key={row.label} className="flex items-center justify-between text-sm">
-            <span className="text-gray-500">{row.label}</span>
-            <span className={cn("font-semibold", row.color || "text-[#143c2f]")}>
-              {row.prefix}{fmt(row.value)}
-            </span>
-          </div>
-        ))}
+      <div key={row.label} className="flex items-center justify-between text-sm">
+        <span className="text-gray-500">{row.label}</span>
+        <span className={cn("font-semibold", row.color || "text-[#143c2f]")}>
+          {row.customValue
+            ? row.customValue
+            : `${row.prefix || ""}${fmt(Math.abs(row.value))}`}
+        </span>
+      </div>
+    ))}
 
         <div className="border-t border-dashed border-[#e7dfd4] pt-3">
           <div className="flex items-center justify-between">
@@ -233,7 +344,7 @@ const OrderSummary = ({ pricing, onCheckout, loading }) => {
           className="cursor-pointer w-full flex items-center justify-center gap-2 py-3.5 bg-[#457358] hover:bg-[#143c2f] disabled:opacity-50 text-white rounded-xl text-sm font-bold transition-all shadow-sm mt-2">
           {loading
             ? <Loader2 className="w-4 h-4 animate-spin" />
-            : <><ShieldCheck className="w-4 h-4" /> Place Order</>}
+            : <><ShieldCheck className="w-4 h-4" /> Proceed to Checkout</>}
         </button>
 
         <div className="flex items-center justify-center gap-4 pt-1">
@@ -373,7 +484,10 @@ const handleQuantityChange = async (newQty) => {
       });
       const json = await res.json();
       if (!json.success) throw new Error(json.message);
-      toast.success(`Voucher applied! Saving ${fmt(json.data?.discountAmount)}`);
+      const appliedMsg = json.data?.discountType === "complimentary"
+  ? json.message
+  : `Voucher applied! Saving ${fmt(json.data?.discountAmount)}`;
+toast.success(appliedMsg);
       await fetchBuyNow();
     } catch (err) {
       toast.error(err.message || "Invalid voucher code");
@@ -721,6 +835,10 @@ const pricing = {
                         </span>
                       </p>
                     )}
+                    <p className="flex items-center gap-1.5 text-[11px] text-black mt-1 font-normal">
+  <Truck className="w-3.5 h-3.5 text-black flex-shrink-0" />
+  Estimated delivery within 5–6 business days.
+</p>
 
                     {/* Banner savings inline */}
                     {bestBanner && bestBanner.discountAmount > 0 && item.isAvailable && (
@@ -751,11 +869,7 @@ const pricing = {
 
             {/* ── RIGHT: Order Summary ── */}
             <div className="space-y-4 lg:sticky lg:top-28">
-              <OrderSummary
-                pricing={pricing}
-                onCheckout={handlePlaceOrder}
-                loading={checkingOut}
-              />
+              <OrderSummary pricing={pricing} onCheckout={handlePlaceOrder} loading={checkingOut} appliedVoucher={appliedVoucher} />
 
               {/* All applicable banners */}
               {allBanners.length > 0 && (

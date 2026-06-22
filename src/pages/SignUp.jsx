@@ -10,7 +10,6 @@ const Signup = () => {
   const initialState = {
     name: "",
     email: "",
-    phone: "",
     password: "",
     confirmPassword: "",
   };
@@ -158,7 +157,7 @@ const handleSubmit = async (e) => {
           </div>
 
           {/* Phone */}
-          <div className="flex flex-col gap-1">
+          {/* <div className="flex flex-col gap-1">
             <div className="flex flex-col gap-1.5">
               <label htmlFor="phone" className="text-sm font-semibold">
                 Phone Number
@@ -184,7 +183,7 @@ const handleSubmit = async (e) => {
                 </span>
               )}
             </div>
-          </div>
+          </div> */}
 
           {/* Password */}
           <div className="flex flex-col gap-1">
@@ -290,14 +289,20 @@ const handleSubmit = async (e) => {
           <div className="flex-grow h-px bg-gray-300"></div>
         </div>
 
-        <button className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm font-semibold">
-          <img
-            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-            alt="G"
-            className="w-4 h-4"
-          />
-          Continue with Google
-        </button>
+<button
+  type="button"
+  onClick={() => {
+    window.location.href = `${BASE_URL}/auth/google`;
+  }}
+  className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm font-semibold"
+>
+  <img
+    src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+    alt="G"
+    className="w-4 h-4"
+  />
+  Continue with Google
+</button>
       </div>
     </div>
   );

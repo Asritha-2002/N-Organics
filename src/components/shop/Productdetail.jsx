@@ -6,7 +6,8 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useCart } from "../../pages/CartContext";
 import { useNavigate } from "react-router-dom";
-import LoginRequiredModal from "./modal/LoginRequiredModal"
+import SignInModal from "./modal/SignInModal"
+
 import {
   Heart,
   ChevronLeft,
@@ -213,6 +214,21 @@ export default function ProductDetail() {
       setWishlisted(false);
     }
   };
+
+const fetchProduct = async () => {
+  const token = localStorage.getItem("token");
+  const url = token ? `${BASE_URL}/products/auth/${id}` : `${BASE_URL}/products/${id}`;
+  const headers = token
+    ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+    : { "Content-Type": "application/json" };
+
+  const r = await fetch(url, { method: "GET", headers });
+  const json = await r.json();
+  if (!json.success) throw new Error(json.message || "Product not found");
+  setProduct(json.data);
+  setRelatedProducts(json.data.relatedProducts || []);
+};
+
   useEffect(() => {
     if (!id) return;
     setLoading(true);
@@ -250,9 +266,11 @@ export default function ProductDetail() {
         }
       })
       .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [id]);
-
+      .finally(() => setLoading(false)); 
+      fetchProduct()
+    .catch((err) => setError(err.message))
+    .finally(() => setLoading(false));
+}, [id]);
   const handleVariantSelect = (variant) => {
     setSelectedVariant(variant);
     setCurrentImageIndex(0);
@@ -410,7 +428,7 @@ const freeFromList = sd.madeWithoutList
     }
   };
 
-  const handleAddToCart = async () => {
+const handleAddToCart = async () => {
     try {
       if (!product?._id && !product?.id) {
         toast.error("Product not found");
@@ -422,12 +440,6 @@ const freeFromList = sd.madeWithoutList
         return;
       }
 
-      const token = localStorage.getItem("token");
-      if (!token) {
-  setShowLoginModal(true);
-  return;
-}
-
       const variantIndex = product?.variants?.findIndex(
         (variant) => variant?.sku === selectedVariant?.sku,
       );
@@ -437,10 +449,64 @@ const freeFromList = sd.madeWithoutList
         return;
       }
 
+      const productId = product?._id || product?.id;
+      const token = localStorage.getItem("token");
+
+      // ─── CASE A: GUEST CART (NOT LOGGED IN) ───
+      if (!token) {
+        // 1. Fetch current cart array from localStorage
+        const currentGuestCart = JSON.parse(localStorage.getItem("guestCart")) || [];
+
+        // 2. Check if this exact product + variant combination already exists
+        const existingItemIndex = currentGuestCart.findIndex(
+          (item) => item.productId === productId && item.variantIndex === variantIndex
+        );
+
+        if (existingItemIndex > -1) {
+          toast.error("Product already in cart");
+          return;
+        }
+
+        // 3. Push new item matching your hydration payload format
+        currentGuestCart.push({
+          productId,
+          variantIndex,
+          quantity: quantity || 1,
+          attributes: selectedVariant?.attributes || {}
+        });
+
+        // 4. Save back to localStorage & sync badge count
+        localStorage.setItem("guestCart", JSON.stringify(currentGuestCart));
+        toast.success("Item added to cart successfully");
+        
+        if (typeof fetchCartCount === "function") {
+          await fetchCartCount();
+        }
+
+        // 5. Trigger your UI states just like the backend route does
+        setShowAddedModal(true);
+        setProduct((prev) => ({
+          ...prev,
+          variants: prev.variants.map((variant) =>
+            variant.sku === selectedVariant.sku
+              ? { ...variant, isPresent: true }
+              : variant,
+          ),
+        }));
+
+        setSelectedVariant((prev) => ({
+          ...prev,
+          isPresent: true,
+        }));
+
+        return; // Exit function early for guests
+      }
+
+      // ─── CASE B: LOGGED IN USER (DATABASE CART via AXIOS) ───
       setCartLoading(true);
 
       const payload = {
-        productId: product?._id || product?.id,
+        productId,
         variantIndex,
         quantity,
       };
@@ -456,6 +522,7 @@ const freeFromList = sd.madeWithoutList
       );
       await fetchCartCount();
       setShowAddedModal(true);
+      
       setProduct((prev) => ({
         ...prev,
         variants: prev.variants.map((variant) =>
@@ -479,7 +546,6 @@ const freeFromList = sd.madeWithoutList
           error?.response?.data?.message || "Failed to add item to cart",
         );
       }
-
       console.error("Add to cart error:", error);
     } finally {
       setCartLoading(false);
@@ -538,6 +604,9 @@ const freeFromList = sd.madeWithoutList
       );
     }
   };
+
+
+
 
   return (
     <section className="min-h-screen bg-[#faf8f5] pt-28 sm:pt-32 lg:pt-36 pb-20 text-sm">
@@ -900,60 +969,62 @@ const freeFromList = sd.madeWithoutList
 
             {/* Highlights */}
             {product.highlights?.filter(Boolean).length > 0 && (
-              <ul className="space-y-1.5">
-                {product.highlights.filter(Boolean).map((h, i) => (
-                  <li
-  key={i}
-  className="flex items-start gap-2 text-sm text-[#284a39] bg-[#457358]/8 border border-[#457358]/15 px-3 py-2 rounded-xl font-medium"
->
-  <span className="w-1.5 h-1.5 rounded-full bg-[#457358] mt-2 shrink-0" />
-  <span>{h}</span>
-</li>
-                ))}
-              </ul>
-            )}
+  <div className="flex flex-wrap gap-2">
+    {product.highlights.filter(Boolean).map((h, i) => (
+      <div
+        key={i}
+        className="inline-flex items-center gap-2 text-sm text-[#284a39] bg-[#6ea989]/20 border border-[#6ea989]/35 px-3 py-1.5 rounded-full font-medium w-fit"
+      >
+        <span className="w-1.5 h-1.5 rounded-full bg-[#457358] shrink-0" />
+        <span>{h}</span>
+      </div>
+    ))}
+  </div>
+)}
 
             {/* Selected variant info card */}
-            {selectedVariant && (
-              <motion.div
-                key={selectedVariant.sku}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="bg-white border border-[#e7dfd4] rounded-2xl p-4 space-y-3"
-              >
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                    Selected Product
-                  </p>
-                  <span className="text-[10px] font-bold text-[#457358] bg-[#457358]/10 px-2 py-0.5 rounded-full">
-                    {selectedVariant.sku}
-                  </span>
-                </div>
-                {Object.entries(selectedVariant.attributes || {})
-                  .filter(([, v]) => v && v !== "" && v !== 0)
-                  .map(([key, val]) => (
-                    <div
-                      key={key}
-                      className="flex items-center justify-between text-sm"
-                    >
-                      <span className="text-gray-400 capitalize">{key}</span>
-                      <span className="font-semibold text-[#143c2f] capitalize">
-                        {val}
-                      </span>
-                    </div>
-                  ))}
-                {selectedVariant.weight?.value > 0 && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-400">Net Weight</span>
-                    <span className="font-semibold text-[#143c2f]">
-                      {selectedVariant.weight.value}{" "}
-                      {selectedVariant.weight.unit}
-                    </span>
-                  </div>
-                )}
-              </motion.div>
-            )}
+           {selectedVariant && (
+  <motion.div
+    key={selectedVariant.sku}
+    initial={{ opacity: 0, y: 6 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.25 }}
+    className="space-y-4"
+  >
+    {/* Top Info */}
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-[11px] uppercase tracking-[0.2em] text-[#457358] font-medium">
+          Selected Variant
+        </p>
+      </div>
+
+      <span className="text-xs font-medium text-[#4f7c67]">
+        SKU : {selectedVariant.sku}
+      </span>
+    </div>
+
+    {/* Variant Attributes */}
+    <div className="flex flex-wrap gap-x-6 gap-y-3">
+      {Object.entries(selectedVariant.attributes || {})
+        .filter(([, v]) => v && v !== "" && v !== 0)
+        .map(([key, val]) => (
+          <div key={key} className="flex items-center gap-2">
+            <span className="text-sm text-gray-400 capitalize">
+              {key}:
+            </span>
+
+            <span className="text-sm font-semibold text-[#18392b] capitalize">
+              {val}
+            </span>
+          </div>
+        ))}
+    </div>
+
+    {/* Minimal Divider */}
+    <div className="border-b border-[#ece7df]" />
+  </motion.div>
+)}
 
             {/* Variant selector pills */}
             {product.variants?.length > 1 && (
@@ -969,10 +1040,10 @@ const freeFromList = sd.madeWithoutList
                         key={v.sku}
                         onClick={() => handleVariantSelect(v)}
                         disabled={!v.isActive || v.stock?.quantity === 0}
-                        className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
+                        className={`px-3 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                           active
-                            ? "bg-[#457358] text-white border-[#457358] shadow-sm"
-                            : "bg-white text-[#143c2f] border-gray-200 hover:border-[#457358]/50"
+                            ? "bg-[#d2e16a] text-[#1c402f] shadow-sm"
+                            : "bg-white text-[#143c2f] border-gray-200 hover:text-[#FFFFFF] hover:bg-[#457358]"
                         } ${!v.isActive || v.stock?.quantity === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
                       >
                         {getVariantLabel(v)}
@@ -1035,7 +1106,6 @@ const freeFromList = sd.madeWithoutList
                 </span>
               </div>
             )}
-
             {/* Stock indicator */}
             {selectedVariant && (
               <div
@@ -1079,6 +1149,11 @@ const freeFromList = sd.madeWithoutList
               </div>
             )}
 
+            <p className="flex items-center gap-1.5 text-[11px] text-black mt-1 font-normal">
+  <Truck className="w-3.5 h-3.5 text-black flex-shrink-0" />
+  Estimated delivery within 5–6 business days.
+</p>
+
             {/* Quantity + Actions */}
             <div className="space-y-3 border-t border-gray-200/50 pt-5">
               <div className="flex items-center justify-between px-4 py-3 bg-white rounded-2xl border border-gray-200/50 shadow-sm">
@@ -1120,7 +1195,7 @@ const freeFromList = sd.madeWithoutList
                   <button
                     onClick={handleAddToCart}
                     disabled={stockQty === 0 || cartLoading}
-                    className="cursor-pointer w-full flex items-center justify-center gap-2 bg-[#457358] hover:bg-[#143c2f] disabled:opacity-50 text-white py-3.5 px-6 rounded-2xl shadow-sm transition text-sm font-semibold"
+                    className="cursor-pointer w-full flex items-center justify-center gap-2 disabled:opacity-50 py-3 px-6 rounded-full shadow-sm transition text-sm font-semibold bg-[#d2e16a] text-[#1c402f] hover:text-[#FFFFFF] hover:bg-[#457358]"
                   >
                     <ShoppingCart className="h-4 w-4" />
                     {cartLoading ? "Adding..." : "Add to Cart"}
@@ -1129,7 +1204,7 @@ const freeFromList = sd.madeWithoutList
                 <button
                   onClick={handleBuyNow}
                   disabled={stockQty === 0}
-                  className="cursor-pointer w-full py-3.5 px-6 rounded-2xl text-sm font-semibold bg-[#c8fec0] hover:bg-[#a8f0a0] disabled:opacity-50 text-[#143c2f] transition"
+                  className="cursor-pointer w-full py-3.5 px-6 rounded-full text-sm font-semibold  disabled:opacity-50 hover:bg-[#d2e16a] hover:text-[#1c402f] text-[#FFFFFF] bg-[#457358] transition"
                 >
                   Buy Now
                 </button>
@@ -1582,13 +1657,14 @@ const freeFromList = sd.madeWithoutList
         quantity={quantity}
         bestOffer={bestOffer}
       />
-      <ProductReviews productId={product?._id || product?.id} />
-      <LoginRequiredModal
+      <ProductReviews 
+       onReviewSubmitted={fetchProduct}
+      productId={product?._id || product?.id} />
+      <SignInModal
   isOpen={showLoginModal}
-  onClose={() => setShowLoginModal(false)}
-  title="Login Required"
-  message="Please sign in to add items to your cart."
-  redirectPath="/sign-in"
+  onClose={() =>
+    setShowLoginModal(false)
+  }
 />
       
     </section>

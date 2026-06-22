@@ -14,7 +14,7 @@ const formatDiscount = (banner) => {
   if (!banner) return "";
   return banner.discountType === "percentage"
     ? `${banner.discount}% Off`
-    : `₹${banner.discount} Off`;
+    : `$${banner.discount} Off`;
 };
 
 const isUpcoming = (banner) => new Date() < new Date(banner.startDate);
@@ -357,7 +357,7 @@ const HeroSection = () => {
             <div className="flex flex-wrap gap-4">
               <button
   onClick={handleBannerClick}
-  className="flex items-center gap-2 px-8 py-3.5 bg-[#457358] text-[white] rounded-full shadow-xl hover:bg-[#1c402f] transition-all duration-300 group cursor-pointer text-sm tracking-wide"
+  className="flex items-center gap-2 px-8 py-3 bg-[#d2e16a] text-[#1c402f] rounded-full shadow-xl hover:text-[#FFFFFF] hover:bg-[#457358] transition-all duration-300 group cursor-pointer text-sm tracking-wide font-semibold"
 >
   {banner.buttonText || "Shop Now"}
   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

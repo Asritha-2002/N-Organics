@@ -13,7 +13,7 @@ import {
   Camera,
   Heart
 } from "lucide-react";
-import LoginRequiredModal from "./modal/LoginRequiredModal"
+import SignInModal from "./modal/SignInModal"
 
 /* =========================================================
    CUSTOM UI COMPONENTS
@@ -385,7 +385,7 @@ function ReviewCard({ review }) {
   );
 }
 
-function ReviewModal({ onClose, productId }) {
+function ReviewModal({ onClose,onSubmitted, productId }) {
   const [rating, setRating] = useState(0);
   const [headline, setHeadline] = useState("");
   const [reviewText, setReviewText] = useState("");
@@ -424,6 +424,7 @@ function ReviewModal({ onClose, productId }) {
     fd.append("rating",    rating);
     fd.append("headline",  headline.trim());
     fd.append("review",    reviewText.trim());
+    // fd.append("status", "approved");
 
     // Separate images and videos into their own fields
     mediaFiles.forEach(({ file, type }) => {
@@ -444,6 +445,7 @@ function ReviewModal({ onClose, productId }) {
     if (!res.ok) throw new Error(json.message || "Failed to submit review");
 
     toast.success(json.message || "Review submitted successfully!");
+    onSubmitted();
     onClose();
   } catch (err) {
     toast.error(err.message || "Something went wrong");
@@ -596,11 +598,11 @@ function ReviewModal({ onClose, productId }) {
 </Button>
           </div>
         </form>
-        <LoginRequiredModal
+        <SignInModal
   isOpen={showLoginModal}
   onClose={() => setShowLoginModal(false)}
   title="Login Required"
-  message="Please sign in to add items to your cart."
+  message="Please sign in to give review."
   redirectPath="/sign-in"
 />
       </motion.div>
@@ -613,7 +615,7 @@ function ReviewModal({ onClose, productId }) {
    MAIN COMPONENT
 ========================================================= */
 
-export default function ProductReviews({productId}) {
+export default function ProductReviews({productId, onReviewSubmitted}) {
   const [modalOpen, setModalOpen] = useState(false);
       
   const [sort, setSort] = useState("Most Recent");
@@ -634,44 +636,30 @@ export default function ProductReviews({productId}) {
 
 const [loadingRatings, setLoadingRatings] = useState(true);
 
-React.useEffect(() => {
-  const fetchRatings = async () => {
-    try {
-      setLoadingRatings(true);
-
-      const res = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/products/${productId}/ratings`
-      );
-
-      const json = await res.json();
-
-      if (!res.ok) {
-        throw new Error(json.message || "Failed to fetch ratings");
+const fetchRatings = async () => {
+  try {
+    setLoadingRatings(true);
+    const res = await fetch(
+      `${import.meta.env.VITE_BASE_URL}/products/${productId}/ratings`
+    );
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message || "Failed to fetch ratings");
+    setRatings(
+      json?.data?.ratings || {
+        average: 0,
+        count: 0,
+        breakdown: { five: 0, four: 0, three: 0, two: 0, one: 0 },
       }
-
-      setRatings(
-        json?.data?.ratings || {
-          average: 0,
-          count: 0,
-          breakdown: {
-            five: 0,
-            four: 0,
-            three: 0,
-            two: 0,
-            one: 0,
-          },
-        }
-      );
-    } catch (error) {
-      console.error("Ratings fetch error:", error);
-    } finally {
-      setLoadingRatings(false);
-    }
-  };
-
-  if (productId) {
-    fetchRatings();
+    );
+  } catch (error) {
+    console.error("Ratings fetch error:", error);
+  } finally {
+    setLoadingRatings(false);
   }
+};
+
+React.useEffect(() => {
+  if (productId) fetchRatings();
 }, [productId]);
 
 
@@ -708,32 +696,26 @@ const ratingBars = [
 const [reviews, setReviews] = useState([]);
 const [loadingReviews, setLoadingReviews] = useState(true);
 
-React.useEffect(() => {
-  const fetchReviews = async () => {
-    try {
-      setLoadingReviews(true);
-
-      const res = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/products/${productId}/reviews`
-      );
-
-      const json = await res.json();
-
-      if (!res.ok) {
-        throw new Error(json.message || "Failed to fetch reviews");
-      }
-
-      setReviews(json.reviews || []);
-    } catch (error) {
-      console.error("Reviews fetch error:", error);
-    } finally {
-      setLoadingReviews(false);
-    }
-  };
-
-  if (productId) {
-    fetchReviews();
+// Define fetchReviews outside useEffect
+const fetchReviews = async () => {
+  try {
+    setLoadingReviews(true);
+    const res = await fetch(
+      `${import.meta.env.VITE_BASE_URL}/products/${productId}/reviews`
+    );
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message || "Failed to fetch reviews");
+    setReviews(json.reviews || []);
+  } catch (error) {
+    console.error("Reviews fetch error:", error);
+  } finally {
+    setLoadingReviews(false);
   }
+};
+
+// Keep useEffect but just call it
+React.useEffect(() => {
+  if (productId) fetchReviews();
 }, [productId]);
 const filteredReviews = reviews.filter((review) => {
   if (filter === "All Stars") return true;
@@ -743,6 +725,9 @@ const filteredReviews = reviews.filter((review) => {
   return review.rating === selectedRating;
 });
   
+const refreshAll = async () => {
+  await Promise.all([fetchReviews(), fetchRatings(), onReviewSubmitted?.()]);
+};
   
 
   return (
@@ -764,7 +749,7 @@ const filteredReviews = reviews.filter((review) => {
             <div>
               <Button
                 onClick={() => setModalOpen(true)}
-                className="px-5 py-2 bg-[#d2e16a] hover:bg-[#457358] cursor-pointer text-[#002b0a] hover:text-white"
+                className="px-5 py-2 bg-[#d2e16a] hover:bg-[#457358] cursor-pointer text-[#002b0a] hover:text-white rounded-full"
               >
                 <Camera className="w-4 h-4 mr-2" />
                 Write a Review
@@ -816,8 +801,8 @@ const filteredReviews = reviews.filter((review) => {
                   onClick={() => setFilter(f)}
                   className={`cursor-pointer px-4 py-2 rounded-full border border-gray-400 text-xs uppercase tracking-wider transition-all ${
                     filter === f
-                      ? "bg-[#457358] text-white"
-                      : "hover:border-gray-400 text-gray-500"
+                      ? "bg-[#d2e16a] text-[#1c402f] "
+                      : "hover:border-gray-400 text-gray-500 hover:text-[#FFFFFF] hover:bg-[#457358]"
                   }`}
                 >
                   {f}
@@ -851,7 +836,11 @@ const filteredReviews = reviews.filter((review) => {
 
       {/* Modal */}
       <AnimatePresence>
-        {modalOpen && <ReviewModal onClose={() => setModalOpen(false)} productId={productId} />}
+        {modalOpen && <ReviewModal 
+        onSubmitted={refreshAll}
+        onClose={() => setModalOpen(false)} 
+        productId={productId} />
+        }
       </AnimatePresence>
     </>
   );

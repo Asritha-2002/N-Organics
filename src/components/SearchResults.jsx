@@ -51,21 +51,7 @@ const SORT_OPTIONS = [
 
 // ── Filter group definitions ──
 const FILTER_GROUPS = [
-  {
-    key: "concern",
-    label: "Concern",
-    extract: (item) => item.skincareDetails?.skinConcerns || [],
-    match: (item, sel) =>
-      sel.some((s) => (item.skincareDetails?.skinConcerns || []).includes(s)),
-  },
-  {
-    key: "skinType",
-    label: "Skin Type",
-    extract: (item) => item.skincareDetails?.skinType || [],
-    match: (item, sel) =>
-      sel.some((s) => (item.skincareDetails?.skinType || []).includes(s)),
-  },
-  {
+   {
     key: "category",
     label: "Category",
     extract: (item) => {
@@ -78,19 +64,26 @@ const FILTER_GROUPS = [
       sel.some((s) => item.category === s || item.subCategory === s),
   },
   {
+    key: "skinType",
+    label: "Skin Type",
+    extract: (item) => item.skincareDetails?.skinType || [],
+    match: (item, sel) =>
+      sel.some((s) => (item.skincareDetails?.skinType || []).includes(s)),
+  },
+  {
+    key: "concern",
+    label: "Concern",
+    extract: (item) => item.skincareDetails?.skinConcerns || [],
+    match: (item, sel) =>
+      sel.some((s) => (item.skincareDetails?.skinConcerns || []).includes(s)),
+  },
+
+  {
     key: "brand",
     label: "Brand",
     extract: (item) => (item.brand ? [item.brand] : []),
     match: (item, sel) => sel.includes(item.brand),
   },
-//   {
-//     key: "ingredient",
-//     label: "Key Ingredient",
-//     extract: (item) =>
-//       (item.ingredients || []).map((i) => i.name).filter(Boolean),
-//     match: (item, sel) =>
-//       sel.some((s) => (item.ingredients || []).some((i) => i.name === s)),
-//   },
   {
     key: "quantity",
     label: "Size / Quantity",
@@ -205,7 +198,7 @@ function FilterGroup({ group, options, selected, onChange }) {
 }
 
 // ── No Results state ──
-function NoResults({ query, allProducts, navigate, onAddToCart, cartLoadingId, token, setShowLoginModal }) {
+function NoResults({ query, allProducts, navigate, onAddToCart, cartLoadingId }) {
   return (
     <div className="flex flex-col items-center py-16 text-center px-4">
       <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#1c402f]/8 border border-[#1c402f]/10">
@@ -427,16 +420,60 @@ export default function SearchResults() {
     run();
   }, []);
 
-  // Add to cart — same logic as ProductsSection
+  // Add to cart — Configured for both verified and local guest storage sessions
   const handleAddToCart = async (e, product) => {
     e.stopPropagation();
-    if (!token) { setShowLoginModal(true); return; }
+    
     if (!product.quantity || product.quantity === 0) {
       toast.error("This product is out of stock");
       return;
     }
-    const loadingKey = `${product._id}-${product.variantIndex ?? 0}`;
+
+    const targetVariantIndex = product.variantIndex ?? 0;
+    const loadingKey = `${product._id}-${targetVariantIndex}`;
     setCartLoadingId(loadingKey);
+
+    // --- CASE A: GUEST CART (NO LOGGED-IN SESSION TOKEN) ---
+    if (!token) {
+      try {
+        // Retrieve current storage layout array
+        const currentGuestCart = JSON.parse(localStorage.getItem("guestCart")) || [];
+        
+        // Search inside for duplicate reference matching unique sub-item details
+        const existingItemIndex = currentGuestCart.findIndex(
+          (item) => item.productId === product._id && item.variantIndex === targetVariantIndex
+        );
+
+        if (existingItemIndex > -1) {
+          // Rule boundary fallback logic
+          toast.error("Already in cart");
+          setCartLoadingId(null);
+          return;
+        }
+
+        // Drop unique values into structure framework matching hydration payload rules
+        currentGuestCart.push({
+          productId: product._id,
+          variantIndex: targetVariantIndex,
+          quantity: 1,
+          attributes: product.variants?.[targetVariantIndex]?.attributes || {}
+        });
+
+        localStorage.setItem("guestCart", JSON.stringify(currentGuestCart));
+        toast.success("Added to cart!");
+        
+        // Re-dispatch layout events to sync Navbar bubbles seamlessly
+        if (typeof fetchCartCount === "function") fetchCartCount();
+      } catch (err) {
+        console.error("Local storage allocation exception:", err);
+        toast.error("Failed to add item to storage cart");
+      } finally {
+        setCartLoadingId(null);
+      }
+      return;
+    }
+
+    // --- CASE B: LOGGED IN DATABASE INTEGRATION CART ---
     try {
       const response = await fetch(`${BASE_URL}/cart/items`, {
         method: "POST",
@@ -446,7 +483,7 @@ export default function SearchResults() {
         },
         body: JSON.stringify({
           productId:    product._id,
-          variantIndex: product.variantIndex ?? 0,
+          variantIndex: targetVariantIndex,
           quantity:     1,
         }),
       });

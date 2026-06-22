@@ -86,7 +86,6 @@ const UsersSidebar = () => {
               {navItems.map((item) => {
                 const LucideIcon = item.lucideIcon;
                 const isRouteActive = location.pathname === item.path;
-
                 return (
                   <NavLink
                     key={item.name}

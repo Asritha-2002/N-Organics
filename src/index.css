@@ -14,3 +14,18 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+body{
+  background-color: #faf8f5;
+}
+@keyframes waveMove {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-wave-fast {
+  animation: waveMove 10s linear infinite;
+}
+
+.animate-wave-slow {
+  animation: waveMove 16s linear infinite;
+}

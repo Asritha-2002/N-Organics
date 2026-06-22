@@ -292,7 +292,7 @@ const [deleteId, setDeleteId] = useState(null);
                   <div className="text-xs font-semibold text-green-600">
                     {b.discountType === "percentage"
                       ? `${b.discount}% OFF`
-                      : `₹${b.discount} OFF`}
+                      : `$${b.discount} OFF`}
                   </div>
                 </div>
                 {/* Actions */}
@@ -421,7 +421,7 @@ const [deleteId, setDeleteId] = useState(null);
                     <span className="text-green-600 font-semibold">
                       {selectedBanner.discountType === "percentage"
                         ? `${selectedBanner.discount}%`
-                        : `₹${selectedBanner.discount}`}
+                        : `$${selectedBanner.discount}`}
                     </span>
                   </div>
 

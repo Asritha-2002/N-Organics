@@ -33,6 +33,12 @@ import Cart from './pages/Cart';
 import AddressManagement from './components/user/AddressManagement';
 import BuyNow from './pages/BuyNow';
 import SearchResults from './components/SearchResults';
+import CheckoutPayment from './pages/CheckoutPayment';
+import StripeSuccess from "./pages/StripeSuccess"
+import OrdersManagement from "./pages/OrdersManagement"
+import MyOrders from './pages/MyOrders';
+import AdminDashboard from "./components/AdminDashboard"
+import AuthCallback from './pages/AuthCallback';
 function App() {
   const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -82,6 +88,7 @@ function App() {
         <Route path="/product/:id" element={<ProductDetailed />} />
         <Route path="/sign-up" element={<Signup/>} />
         <Route path="/sign-in" element={<SignIn/>} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/forget-password" element={<ForgotPassword/>} />
         <Route path="/reset-password" element={<RecetPassword/>} />
          <Route path="/verify-email" element={<VerifyEmail/>} />
@@ -96,6 +103,9 @@ function App() {
            <Route path="/cart" element={<Cart/>} />
            <Route path="/checkout" element={<BuyNow/>} />
            <Route path="/search" element={<SearchResults />} />
+           <Route path="/checkout/payment" element={<CheckoutPayment/>} />
+           <Route path="/checkout/stripe/success" element={<StripeSuccess />} />
+<Route path="/checkout/stripe/cancel"  element={<Navigate to="/checkout" />} />
 
 
           <Route
@@ -107,11 +117,13 @@ function App() {
             }
           >
                   <Route path="banners" element={<Banners />} />
+                  <Route path="orders" element={<OrdersManagement/>} />
                   <Route path="announcementbar" element={<AnnouncementBar />} />
                   <Route path="users" element={<UserManagementPage />} />
                   <Route path="products" element={<Products />} />
                   <Route path="tagmanager" element={<TagManager />} />
                   <Route path="vouchers" element={<Voucher/>} />
+                  <Route path="dashboard" element={<AdminDashboard/>} />
 
 
 
@@ -127,6 +139,7 @@ function App() {
           >
             <Route index element={<Profile />} />
             <Route path="profile" element={<Profile />} />
+            <Route path="orders" element={<MyOrders/>} />
             <Route path="wishlist" element={<Wishlist />} />
             <Route path="addresses" element={<AddressManagement />} />
 

@@ -56,11 +56,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       icon: FaTag,
       path: "/admin/tagmanager",
     },
-    {
-      name: "Shop Details",
-      icon: Store,
-      path: "/admin/shop-details",
-    },
+    // {
+    //   name: "Shop Details",
+    //   icon: Store,
+    //   path: "/admin/shop-details",
+    // },
   ];
 
   return (

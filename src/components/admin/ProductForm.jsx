@@ -338,8 +338,8 @@ const VariantCard = ({ variant, index, onChange, onRemove, isOnly }) => {
         <Field label="Pack Of"><Input type="number" min="1" placeholder="1" value={variant.attributes.packOf} onWheel={(e) => e.target.blur()}  onChange={(e) => set("attributes.packOf", e.target.value)} /></Field>
       </div>
       <div className="grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        <Field label="MRP (₹)" required><Input required  type="number" min="0" placeholder="599" value={variant.price.mrp} onWheel={(e) => e.target.blur()}  onChange={(e) => set("price.mrp", e.target.value)} /></Field>
-        <Field label="Selling Price (₹)" required><Input required type="number" min="0" placeholder="399" value={variant.price.sellingPrice} onWheel={(e) => e.target.blur()}  onChange={(e) => set("price.sellingPrice", e.target.value)} /></Field>
+        <Field label="MRP ($)" required><Input required  type="number" min="0" placeholder="599" value={variant.price.mrp} onWheel={(e) => e.target.blur()}  onChange={(e) => set("price.mrp", e.target.value)} /></Field>
+        <Field label="Selling Price ($)" required><Input required type="number" min="0" placeholder="399" value={variant.price.sellingPrice} onWheel={(e) => e.target.blur()}  onChange={(e) => set("price.sellingPrice", e.target.value)} /></Field>
       </div>
       <div className="grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 sm:grid-cols-4 gap-3">
         <Field label="Stock Qty" required><Input required type="number" min="0" placeholder="100" value={variant.stock.quantity} onWheel={(e) => e.target.blur()}  onChange={(e) => set("stock.quantity", e.target.value)} /></Field>

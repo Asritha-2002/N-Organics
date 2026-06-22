@@ -633,7 +633,7 @@ const VariantEditor = ({
 
         {/* Pricing */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <Field label="MRP (₹)" required>
+          <Field label="MRP ($)" required>
             <Input
               required
               type="number"
@@ -644,7 +644,7 @@ const VariantEditor = ({
               onChange={(e) => setV("price.mrp", e.target.value)}
             />
           </Field>
-          <Field label="Selling Price (₹)" required>
+          <Field label="Selling Price ($)" required>
             <Input
               required
               type="number"

@@ -5,6 +5,8 @@ import { validateForm } from "../utils/validation"; // ✅ centralized validatio
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useCart } from "../pages/CartContext";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -22,67 +24,100 @@ const SignIn = () => {
   const [loading, setLoading] = useState(false);
 
   // ✅ Handle Change (field-level validation)
- const handleChange = (e) => {
-  const { name, value } = e.target;
+  const handleChange = (e) => {
+    const { name, value } = e.target;
 
-  const updatedData = {
-    ...formData,
-    [name]: value,
+    const updatedData = {
+      ...formData,
+      [name]: value,
+    };
+
+    setFormData(updatedData);
+
+    const validationErrors = validateForm(updatedData);
+
+    // ❌ skip password validation
+    if (name !== "password") {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: validationErrors[name] || "",
+      }));
+    }
   };
+const location = useLocation();
 
-  setFormData(updatedData);
+useEffect(() => {
+  const params = new URLSearchParams(location.search);
+  const status = params.get("status");
+  const error  = params.get("error");
+  const email  = params.get("email");
 
-  const validationErrors = validateForm(updatedData);
-
-  // ❌ skip password validation
-  if (name !== "password") {
-    setErrors((prev) => ({
-      ...prev,
-      [name]: validationErrors[name] || "",
-    }));
+  if (status === "verify_email") {
+    toast.success(
+      `Account created! We sent a verification link to ${decodeURIComponent(email || "your email")}. Please verify before signing in.`,
+      { duration: 6000 }
+    );
   }
-};
 
-  // ✅ Submit with API integration
+  if (error === "google_failed") {
+    toast.error("Google sign-in failed. Please try again.");
+  }
+}, []);
+  // ✅ Submit with API integration & guest cart merging
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  let validationErrors = validateForm(formData);
+    let validationErrors = validateForm(formData);
 
-  // ❌ remove password validation
-  delete validationErrors.password;
+    // ❌ remove password validation
+    delete validationErrors.password;
 
-  setErrors(validationErrors);
+    setErrors(validationErrors);
 
-  if (Object.keys(validationErrors).length > 0) return;
+    if (Object.keys(validationErrors).length > 0) return;
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const res = await axios.post(`${BASE_URL}/user/login`, formData);
+    try {
+      // 🛒 1. Retrieve the local storage guest cart array
+      const localGuestCart = JSON.parse(localStorage.getItem("guestCart")) || [];
 
-    toast.success(res.data.message || "Login successful");
+      // 🛒 2. Combine your credentials state with the guest cart array
+      const loginPayload = {
+        ...formData,
+        guestCart: localGuestCart,
+      };
 
-    if (res.data.token) {
-      localStorage.setItem("token", res.data.token);
+      // Send the integrated payload to your updated backend route
+      const res = await axios.post(`${BASE_URL}/user/login`, loginPayload);
+
+      toast.success(res.data.message || "Login successful");
+
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token);
+      }
+
+      // 🛒 3. Clear the local storage cart item since it's now saved in the database
+      localStorage.removeItem("guestCart");
+
+      const isAdmin = res.data.user?.isAdmin;
+      localStorage.setItem("isAdmin", isAdmin ? "true" : "false");
+      
+      // 🛒 4. Recalculate your context counts so headers reflect the changes instantly
+      await fetchCartCount();
+
+      if (isAdmin) {
+        navigate("/admin");
+      } else {
+        navigate("/account");
+      }
+
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
-
-    const isAdmin = res.data.user?.isAdmin;
-    localStorage.setItem("isAdmin", isAdmin ? "true" : "false");
-    await fetchCartCount();
-
-    if (isAdmin) {
-      navigate("/admin");
-    } else {
-      navigate("/account");
-    }
-
-  } catch (err) {
-    toast.error(err.response?.data?.message || "Something went wrong");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center">
@@ -151,9 +186,7 @@ const SignIn = () => {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Enter Your Password"
-                className={`w-full pl-10 pr-10 py-2.5 border rounded-lg text-sm outline-none ${
-                  "border-gray-300"
-                }`}
+                className={`w-full pl-10 pr-10 py-2.5 border rounded-lg text-sm outline-none border-gray-300`}
               />
 
               <button
@@ -211,16 +244,23 @@ const SignIn = () => {
           <div className="flex-grow border-t border-gray-300"></div>
         </div>
 
-        <button className="w-full flex items-center justify-center gap-3 border border-gray-300 py-2.5 rounded-lg hover:bg-gray-50 transition">
-          <img
-            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-            alt="google"
-            className="w-5 h-5"
-          />
-          <span className="text-gray-700 font-semibold text-sm">
-            Continue with Google
-          </span>
-        </button>
+        
+<button
+  type="button"
+  onClick={() => {
+    window.location.href = `${BASE_URL}/auth/google`;
+  }}
+  className="w-full flex items-center justify-center gap-3 border border-gray-300 py-2.5 rounded-lg hover:bg-gray-50 transition"
+>
+  <img
+    src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+    alt="google"
+    className="w-5 h-5"
+  />
+  <span className="text-gray-700 font-semibold text-sm">
+    Continue with Google
+  </span>
+</button>
       </div>
     </div>
   );

@@ -146,9 +146,9 @@ export default function FeaturedProducts() {
               Curated for You
             </p>
             <h2 className="mt-2 text-3xl font-bold leading-tight text-gray-900 sm:text-4xl lg:text-5xl">
-              Bestselling <br className="hidden sm:block" />
+              Explore <br className="hidden sm:block" />
               <span className="font-normal italic text-[#1c402f]">
-                Rituals
+                Customer Favourites
               </span>
             </h2>
           </div>
@@ -156,7 +156,7 @@ export default function FeaturedProducts() {
           <button
             type="button"
             onClick={() => navigate("/shop")}
-            className="bg-[#d2e16a] px-4 py-1 rounded inline-flex w-fit items-center gap-2 text-sm text-[#1c402f] transition hover:text-[#FFFFFF] hover:bg-[#457358] sm:text-base cursor-pointer ml-auto md:ml-0 self-end md:self-auto"
+            className="bg-[#d2e16a] px-4 py-1 rounded-full inline-flex w-fit items-center gap-2 text-[#1c402f] transition hover:text-[#FFFFFF] hover:bg-[#457358] text-sm cursor-pointer ml-auto md:ml-0 self-end md:self-auto"
           >
             View All
             <ArrowRight size={16} />

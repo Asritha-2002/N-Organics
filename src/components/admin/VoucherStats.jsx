@@ -140,8 +140,8 @@ const VoucherStats = ({
         />
         
         <StatsCard
-          title="₹ Saved"
-          value={stats?.totalDiscountGiven ? `₹${(stats.totalDiscountGiven / 1000).toLocaleString('en-IN', { maximumFractionDigits: 0 })}K` : '₹0'}
+          title="$ Saved"
+          value={stats?.totalDiscountGiven ? `$${(stats.totalDiscountGiven / 1000).toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : '$0'}
           color="violet"
           icon={DollarSign}
         />

@@ -151,7 +151,7 @@ export default function IngredientsSection() {
                         className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl transition-colors sm:h-12 sm:w-12 ${
                           isActive
                             ? "bg-[#457358] text-white"
-                            : "bg-[#f0ebe3] text-[#78746a]"
+                            : "bg-[#d2e16a]  text-[#1c402f]"
                         }`}
                       >
                         <Icon className="h-5 w-5" />

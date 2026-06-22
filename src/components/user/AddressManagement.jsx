@@ -122,7 +122,7 @@ const AddressManagement = () => {
     name: "",
     mobilenum: "",
     addl1: "",
-    country: "India",
+    country: "Australia",
     landmark: "",
     pincode: "",
     city: "",

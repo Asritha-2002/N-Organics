@@ -93,7 +93,7 @@ export default function BrandStory() {
             {/* Button */}
             <button 
               type="button"
-              className="bg-[#457358] hover:bg-[#1c402f] transition-all duration-300 text-white tracking-wider text-xs font-semibold uppercase px-8 py-3.5 rounded-full flex items-center group cursor-pointer shadow-md hover:shadow-lg"
+              className="bg-[#d2e16a] text-[#1c402f] transition-all duration-300 tracking-wider text-xs font-semibold uppercase px-8 py-3.5 rounded-full flex items-center group cursor-pointer shadow-md hover:text-[#FFFFFF] hover:bg-[#457358]"
               onClick={() => navigate('/about')}
             >
               Learn More
