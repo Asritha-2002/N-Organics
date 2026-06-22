@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const fmt = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
+const fmt = (n) => `$${Number(n || 0).toLocaleString("en-IN")}`;
 const cn = (...c) => c.filter(Boolean).join(" ");
 
 // ─── AddToCartModal ───────────────────────────────────────────────────────────
@@ -206,7 +206,7 @@ export default function AddToCartModal({
                     <span className="font-bold">Best Offer: </span>
                     {bestOffer.discountType === "percentage"
                       ? `${bestOffer.discount}% off`
-                      : `Flat ₹${bestOffer.discount} off`}
+                      : `Flat $${bestOffer.discount} off`}
                     {" "}applied at checkout
                   </span>
                 </motion.div>
