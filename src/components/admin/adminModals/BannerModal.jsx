@@ -149,7 +149,7 @@ const handleCategoryChange = (category) => {
     };
   });
 };
-
+console.log(bannerData)
   useEffect(() => {
     if (bannerData) {
       setForm({
@@ -191,6 +191,7 @@ const handleCategoryChange = (category) => {
       e.discount = 'Percentage cannot exceed 100';
     if (!form.startDate) e.startDate = 'Start date is required';
     // if (!form.endDate) e.endDate = 'End date is required';
+  
     if (
   form.endDate &&
   new Date(form.endDate) <= new Date(form.startDate)
