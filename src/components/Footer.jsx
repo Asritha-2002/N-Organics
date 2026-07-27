@@ -149,7 +149,8 @@ export default function Footer() {
             <li><Link to="/contact" onClick={handleScrollTopOnOther} className="hover:text-white transition-colors duration-300">Contact</Link></li>
             <li><a href="/privacy-policy" className="hover:text-white transition-colors duration-300">Privacy Policy</a></li>
             <li><a href="/termsandconditions" className="hover:text-white transition-colors duration-300">Terms & Conditions</a></li>
-           
+            <li><a href="/refund-policy" className="hover:text-white transition-colors duration-300">Refund Policy</a></li>
+            <li><a href="/cancellation-policy" className="hover:text-white transition-colors duration-300"> Cancellation Policy</a></li>
             <li>
               <Link
                 to={localStorage.getItem("token") ? "/account" : "/sign-in"}
