@@ -339,17 +339,22 @@ export default function SignInModal({
             </div>
 
             {/* GOOGLE */}
-            <button className="w-full flex items-center justify-center gap-3 border border-gray-300 py-2.5 rounded-lg hover:bg-gray-50 transition">
-              <img
-                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                alt="google"
-                className="w-5 h-5"
-              />
-
-              <span className="text-gray-700 font-semibold text-sm">
-                Continue with Google
-              </span>
-            </button>
+            <button
+  type="button"
+  onClick={() => {
+    window.location.href = `${BASE_URL}/auth/google`;
+  }}
+  className="w-full flex items-center justify-center gap-3 border border-gray-300 py-2.5 rounded-lg hover:bg-gray-50 transition"
+>
+  <img
+    src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+    alt="google"
+    className="w-5 h-5"
+  />
+  <span className="text-gray-700 font-semibold text-sm">
+    Continue with Google
+  </span>
+</button>
           </motion.div>
         </motion.div>
       )}
