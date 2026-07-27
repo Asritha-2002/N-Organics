@@ -39,6 +39,9 @@ import OrdersManagement from "./pages/OrdersManagement"
 import MyOrders from './pages/MyOrders';
 import AdminDashboard from "./components/AdminDashboard"
 import AuthCallback from './pages/AuthCallback';
+import TermsAndConditions from './pages/TermsAndConditions';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import LegalPolicyPage from './pages/LegalPolicyPage';
 function App() {
   const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -106,6 +109,11 @@ function App() {
            <Route path="/checkout/payment" element={<CheckoutPayment/>} />
            <Route path="/checkout/stripe/success" element={<StripeSuccess />} />
 <Route path="/checkout/stripe/cancel"  element={<Navigate to="/checkout" />} />
+<Route path="/termsandconditions" element={<TermsAndConditions/>}/>
+<Route path="/privacy-policy" element={<PrivacyPolicy/>}/>
+<Route path="/refund-policy" element={<LegalPolicyPage type="refund" />} />
+<Route path="/cancellation-policy" element={<LegalPolicyPage type="cancellation" />} />
+
 
 
           <Route
