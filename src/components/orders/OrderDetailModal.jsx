@@ -68,12 +68,25 @@ const Row = ({ label, value, valueClass = "" }) => (
   </div>
 );
 
+function getImageUrl(image) {
+  if (!image) return null;
+  if (typeof image === 'object') return image.url || null;
+  if (typeof image === 'string') {
+    if (/^https?:\/\//.test(image)) return image; // already a plain URL
+    const match = image.match(/url:\s*'([^']+)'/);
+    return match ? match[1] : null;
+  }
+  return null;
+}
+
 // ─── Order Item Card ──────────────────────────────────────────────────────────
 const OrderItem = ({ item }) => (
   <div className="flex gap-3 p-3 bg-[#faf8f5] border border-[#e7dfd4] rounded-xl">
+    { console.log(item)}
     {item.image ? (
-      <img src={item.image} alt={item.name}
+      <img  src={getImageUrl(item.image)} alt={item.name}
         className="w-14 h-14 rounded-lg object-cover border border-[#e7dfd4] flex-shrink-0 bg-white" />
+       
     ) : (
       <div className="w-14 h-14 rounded-lg border border-[#e7dfd4] flex-shrink-0 bg-white flex items-center justify-center">
         <ShoppingBag className="w-5 h-5 text-gray-300" />
